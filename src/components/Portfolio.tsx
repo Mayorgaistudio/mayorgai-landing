@@ -239,47 +239,51 @@ export default function Portfolio() {
             </p>
           </div>
 
-          {/* Page Counter & Controls */}
+          {/* Page Counter */}
           {!loading && totalPages > 0 && (
-            <div className="flex items-center gap-3 self-start sm:self-auto">
-              <div className="px-3.5 py-1.5 rounded-full bg-slate-100 dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/[0.08] text-xs font-mono text-slate-700 dark:text-silver/70">
-                <span className="text-[#6D5DFB] dark:text-[#00D4FF] font-bold">
-                  {String(currentPage + 1).padStart(2, "0")}
-                </span>
-                {" / "}
-                <span>{String(totalPages).padStart(2, "0")}</span>
-              </div>
-
-              <div className="flex items-center gap-1.5">
-                <button
-                  onClick={handlePrevPage}
-                  className="w-10 h-10 rounded-full bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/[0.08] hover:bg-slate-900 hover:text-white dark:hover:bg-white/10 dark:hover:text-white text-slate-700 dark:text-silver flex items-center justify-center transition-all duration-200 shadow-sm cursor-pointer active:scale-95"
-                  aria-label="Hoja Anterior"
-                >
-                  <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                    <polyline points="15 18 9 12 15 6" />
-                  </svg>
-                </button>
-                <button
-                  onClick={handleNextPage}
-                  className="w-10 h-10 rounded-full bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/[0.08] hover:bg-slate-900 hover:text-white dark:hover:bg-white/10 dark:hover:text-white text-slate-700 dark:text-silver flex items-center justify-center transition-all duration-200 shadow-sm cursor-pointer active:scale-95"
-                  aria-label="Siguiente Hoja"
-                >
-                  <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                    <polyline points="9 18 15 12 9 6" />
-                  </svg>
-                </button>
-              </div>
+            <div className="self-start sm:self-auto px-4 py-2 rounded-full bg-slate-100 dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/[0.08] text-xs font-mono text-slate-700 dark:text-silver/70 flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-[#6D5DFB] dark:bg-[#00D4FF] animate-pulse" />
+              <span>CASO</span>
+              <span className="text-[#6D5DFB] dark:text-[#00D4FF] font-bold">
+                {String(currentPage + 1).padStart(2, "0")}
+              </span>
+              <span>/</span>
+              <span>{String(totalPages).padStart(2, "0")}</span>
             </div>
           )}
         </div>
 
-        {/* ── THE EDITORIAL MAGAZINE BOOK SPREAD ── */}
+        {/* ── THE EDITORIAL MAGAZINE BOOK SPREAD WITH SIDE NAVIGATION ── */}
         {!loading && currentProject && (
-          <div
-            className="relative rounded-3xl overflow-hidden bg-white/95 dark:bg-[#0b0e17] border border-slate-200/90 dark:border-white/[0.09] shadow-[0_25px_70px_rgba(0,0,0,0.1)] dark:shadow-[0_30px_90px_rgba(0,0,0,0.6)] backdrop-blur-2xl"
-            style={{ perspective: 1800 }}
-          >
+          <div className="relative group/magazine px-2 sm:px-4">
+            
+            {/* Floating Left Navigation Arrow */}
+            <button
+              onClick={handlePrevPage}
+              className="absolute -left-2 sm:-left-4 lg:-left-7 top-1/2 -translate-y-1/2 z-30 w-11 sm:w-13 h-11 sm:h-13 rounded-full bg-white/95 dark:bg-[#0c0f18]/95 border border-slate-200/90 dark:border-white/15 shadow-xl hover:shadow-2xl hover:scale-110 active:scale-95 text-slate-800 dark:text-white flex items-center justify-center backdrop-blur-xl transition-all duration-300 hover:border-[#6D5DFB] dark:hover:border-[#00D4FF] cursor-pointer group/arrow"
+              aria-label="Hoja Anterior"
+            >
+              <svg className="w-5 h-5 transform group-hover/arrow:-translate-x-0.5 transition-transform duration-200" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+            </button>
+
+            {/* Floating Right Navigation Arrow */}
+            <button
+              onClick={handleNextPage}
+              className="absolute -right-2 sm:-right-4 lg:-right-7 top-1/2 -translate-y-1/2 z-30 w-11 sm:w-13 h-11 sm:h-13 rounded-full bg-white/95 dark:bg-[#0c0f18]/95 border border-slate-200/90 dark:border-white/15 shadow-xl hover:shadow-2xl hover:scale-110 active:scale-95 text-slate-800 dark:text-white flex items-center justify-center backdrop-blur-xl transition-all duration-300 hover:border-[#6D5DFB] dark:hover:border-[#00D4FF] cursor-pointer group/arrow"
+              aria-label="Siguiente Hoja"
+            >
+              <svg className="w-5 h-5 transform group-hover/arrow:translate-x-0.5 transition-transform duration-200" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+            </button>
+
+            {/* Main Magazine Frame */}
+            <div
+              className="relative rounded-3xl overflow-hidden bg-white/95 dark:bg-[#0b0e17] border border-slate-200/90 dark:border-white/[0.09] shadow-[0_25px_70px_rgba(0,0,0,0.1)] dark:shadow-[0_30px_90px_rgba(0,0,0,0.6)] backdrop-blur-2xl"
+              style={{ perspective: 1800 }}
+            >
             <AnimatePresence mode="wait" initial={false}>
               <motion.div
                 key={currentPage}
@@ -437,6 +441,7 @@ export default function Portfolio() {
 
               </motion.div>
             </AnimatePresence>
+            </div>
           </div>
         )}
 
