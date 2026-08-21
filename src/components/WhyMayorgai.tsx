@@ -174,7 +174,7 @@ function AudioWaveformWidget() {
    ═══════════════════════════════════════════════════════ */
 export default function WhyMayorgai() {
   return (
-    <section className="py-24 md:py-32 relative overflow-hidden">
+    <section id="why-mayorgai" className="py-24 md:py-32 relative overflow-hidden">
       {/* Background Volumetric Glow */}
       <div className="absolute top-1/2 left-1/4 w-[800px] h-[800px] bg-[#6D5DFB]/5 rounded-full blur-[180px] pointer-events-none -translate-y-1/2" />
       <div className="absolute bottom-10 right-1/4 w-[600px] h-[600px] bg-[#00D4FF]/[0.03] rounded-full blur-[160px] pointer-events-none" />
