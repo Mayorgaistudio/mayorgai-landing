@@ -241,7 +241,7 @@ export default function Process() {
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
         >
           <span className="text-xs uppercase tracking-[0.3em] font-medium text-[#6D5DFB]">
-            METODOLOGÍA DE AUTOR
+            METODOLOGÍA ESTRATÉGICA
           </span>
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold font-cabinet text-slate-900 dark:text-white mt-4 tracking-tight">
             Cómo Creamos Tu Sistema

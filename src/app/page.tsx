@@ -1,4 +1,5 @@
 import Hero from "@/components/Hero";
+import KineticMarquee from "@/components/KineticMarquee";
 import Services from "@/components/Services";
 import Portfolio from "@/components/Portfolio";
 import Process from "@/components/Process";
@@ -10,11 +11,11 @@ export default function Home() {
   return (
     <main className="relative bg-white dark:bg-deep-space transition-colors duration-300">
       <Hero />
-      <div className="section-divider" />
+      <KineticMarquee />
       <Services />
       <div className="section-divider" />
       <Portfolio />
-      <div className="section-divider" />
+      <KineticMarquee reverse={true} />
       <Process />
       <div className="section-divider" />
       <WhyMayorgai />

@@ -186,7 +186,7 @@ export default function WhyMayorgai() {
             POR QUÉ MAYORGAI STUDIO
           </span>
           <h2 className="text-4xl md:text-5xl font-bold font-cabinet text-slate-900 dark:text-white mt-4 tracking-tight">
-            Ingeniería &amp; Diseño de Autor
+            Ingeniería &amp; Diseño Digital
           </h2>
           <p className="text-base sm:text-lg text-slate-600 dark:text-silver/60 mt-3 max-w-2xl font-normal leading-relaxed">
             Fusionamos estética cinematográfica con infraestructura tecnológica moderna para construir activos digitales que generan ventaja competitiva real.
@@ -330,7 +330,7 @@ export default function WhyMayorgai() {
                   MayorgAI Studio
                 </span>
                 <p className="text-xs text-slate-700 dark:text-silver/80 leading-relaxed font-medium">
-                  Diseño de autor a medida, automatizaciones nativas y entrega ágil en 2 a 4 semanas.
+                  Diseño 100% a medida, automatizaciones nativas y entrega ágil en 2 a 4 semanas.
                 </p>
               </div>
             </div>
