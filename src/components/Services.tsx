@@ -174,14 +174,20 @@ function ServiceDeckCard({
           </div>
         </div>
 
-        {/* ── RIGHT: Visual Window ── */}
-        <div className="hidden md:block relative h-full rounded-2xl overflow-hidden border border-slate-200/80 dark:border-white/[0.08] bg-black/60 shadow-md">
+        {/* ── RIGHT: Visual Window with Full Framed Robot ── */}
+        <div className="hidden md:flex relative h-full rounded-2xl overflow-hidden border border-slate-200/80 dark:border-white/[0.08] bg-slate-950/90 dark:bg-black/90 shadow-inner items-center justify-center p-2">
           <img
             src={service.image}
             alt={service.title}
-            className="w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
+            className="w-full h-full object-contain object-center transition-transform duration-700 ease-out group-hover:scale-[1.04] drop-shadow-[0_10px_20px_rgba(0,0,0,0.6)]"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
+          {/* Subtle ambient corner glow */}
+          <div
+            className="absolute top-0 right-0 w-32 h-32 rounded-full pointer-events-none opacity-35 blur-xl"
+            style={{
+              background: `radial-gradient(circle at top right, ${service.accent}80, transparent 70%)`,
+            }}
+          />
         </div>
       </div>
     </div>
