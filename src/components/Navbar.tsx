@@ -8,6 +8,7 @@ export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [theme, setTheme] = useState<"light" | "dark">("dark");
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [isInPortfolio, setIsInPortfolio] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -18,13 +19,33 @@ export default function Navbar() {
       }
     };
 
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
 
     // Initial theme detection
     const isDark = document.documentElement.classList.contains("dark");
     setTheme(isDark ? "dark" : "light");
 
-    return () => window.removeEventListener("scroll", handleScroll);
+    // Hide navbar specifically when Portfolio section is in view
+    const portfolioEl = document.getElementById("portfolio");
+    let observer: IntersectionObserver | null = null;
+
+    if (portfolioEl) {
+      observer = new IntersectionObserver(
+        ([entry]) => {
+          setIsInPortfolio(entry.isIntersecting);
+        },
+        {
+          rootMargin: "-60px 0px -25% 0px",
+          threshold: 0.05,
+        }
+      );
+      observer.observe(portfolioEl);
+    }
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      if (observer) observer.disconnect();
+    };
   }, []);
 
   const toggleTheme = () => {
@@ -57,7 +78,13 @@ export default function Navbar() {
 
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 z-50 transition-all duration-500 pointer-events-none flex justify-center px-4 sm:px-6 pt-3 sm:pt-4">
+      <header
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 pointer-events-none flex justify-center px-4 sm:px-6 pt-3 sm:pt-4 ${
+          isInPortfolio
+            ? "-translate-y-28 opacity-0 pointer-events-none"
+            : "translate-y-0 opacity-100"
+        }`}
+      >
         <motion.nav
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
