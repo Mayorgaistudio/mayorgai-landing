@@ -4,15 +4,16 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from "framer-motion";
 
 /* ═══════════════════════════════════════════════════════
-   SERVICE DATA
+   SERVICE DATA (Enriched with ROI & High-Ticket Metrics)
    ═══════════════════════════════════════════════════════ */
 const services = [
   {
     num: "01",
     title: "Branding",
+    badge: "Estrategia 360°",
     description:
       "Creamos identidades de marca memorables, escalables y construidas para durar. Cada marca que diseñamos está pensada para conectar emocionalmente con tu audiencia.",
-    features: ["Estrategia de marca", "Identidad visual", "Naming", "Guías de marca"],
+    features: ["Estrategia de marca", "Identidad visual", "Naming & Storytelling", "Guías de marca"],
     cta: "Ver proyectos",
     image: "/service-branding.jpeg",
     position: "object-top",
@@ -20,45 +21,50 @@ const services = [
   {
     num: "02",
     title: "Diseño Web Premium",
+    badge: "Conversión Optimizada",
     description:
-      "Sitios web perfectos hasta el último píxel que convierten visitantes en clientes. Cada interacción está diseñada para cautivar.",
-    features: ["Landing pages", "Sitios premium", "Experiencias interactivas", "Optimización de conversión"],
+      "Sitios web perfectos hasta el último píxel que convierten visitantes en clientes. Cada interacción está diseñada para cautivar y retener.",
+    features: ["Landing pages de alto impacto", "Experiencias interactivas", "Arquitectura ultra rápida", "CRO & Copywriting"],
     cta: "Explorar webs",
     image: "/service-webdesign.jpeg",
   },
   {
     num: "03",
     title: "Automatización con IA",
+    badge: "Ahorra +40h/mes",
     description:
-      "Optimiza tus flujos de trabajo con sistemas de automatización inteligentes que trabajan por ti las 24 horas.",
-    features: ["Automatización de procesos", "Integración con Make", "Flujos inteligentes", "Mayor productividad"],
+      "Optimiza tus flujos de trabajo con sistemas de automatización inteligentes que reducen tareas repetitivas y escalan tu operación 24/7.",
+    features: ["Automatización de procesos", "Integración con Make/Zapier", "Flujos de leads en CRM", "Pipelines sin errores"],
     cta: "Descubrir soluciones",
     image: "/service-automation.jpeg",
   },
   {
     num: "04",
     title: "Agentes de Voz IA",
+    badge: "Disponibilidad 24/7",
     description:
-      "Agentes de voz impulsados por IA que atienden llamadas y conversaciones de forma completamente natural.",
-    features: ["Atención automática", "Recepcionistas IA", "Agenda inteligente", "Integración con calendario"],
+      "Agentes de voz impulsados por IA con tono humano natural que atienden llamadas, cualifican prospectos y agendan reuniones automáticamente.",
+    features: ["Atención inmediata", "Recepcionistas inteligentes", "Agendamiento sincronizado", "Integración con WhatsApp"],
     cta: "Ver demostración",
     image: "/service-voiceagents.jpeg",
   },
   {
     num: "05",
     title: "Desarrollo de Software",
+    badge: "Arquitectura Cloud",
     description:
-      "Soluciones de software a medida diseñadas para el rendimiento, la seguridad y la escalabilidad.",
-    features: ["Apps web", "Plataformas internas", "Herramientas personalizadas", "APIs y sistemas"],
+      "Soluciones de software a medida diseñadas para el máximo rendimiento, seguridad bancaria y escalabilidad sin fricción.",
+    features: ["Web apps modernas", "Plataformas internas", "Herramientas a medida", "APIs & Microservicios"],
     cta: "Conocer proyectos",
     image: "/service-software.jpeg",
   },
   {
     num: "06",
     title: "Producción Audiovisual",
+    badge: "+300% Engagement",
     description:
-      "Contenido visual de alto impacto que comunica la esencia de tu marca y captura la atención de tu audiencia.",
-    features: ["Video marketing", "Motion graphics", "Contenido para redes", "Producción creativa"],
+      "Contenido visual cinemático que comunica la visión de tu marca, genera estatus y captura la atención en redes sociales.",
+    features: ["Video marketing", "Motion graphics 3D", "Contenido publicitario", "Edición cinemática"],
     cta: "Ver trabajos",
     image: "/service-audiovisual.jpeg",
     position: "object-top",
@@ -66,49 +72,92 @@ const services = [
 ];
 
 /* ═══════════════════════════════════════════════════════
-   SPARKLE COMPONENT — subtle starfield on inactive cards
+   SPOTLIGHT SERVICE PILL BUTTON
    ═══════════════════════════════════════════════════════ */
-function Sparkle({ delay }: { delay: number }) {
-  const [pos, setPos] = useState({ x: 0, y: 0 });
+function ServicePill({
+  service,
+  index,
+  isActive,
+  onSelect,
+}: {
+  service: (typeof services)[0];
+  index: number;
+  isActive: boolean;
+  onSelect: () => void;
+}) {
+  const btnRef = useRef<HTMLButtonElement>(null);
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
-  useEffect(() => {
-    const randomize = () => {
-      setPos({ x: Math.random() * 100, y: Math.random() * 100 });
-    };
-    randomize();
-    const interval = setInterval(randomize, 3000 + Math.random() * 4000);
-    return () => clearInterval(interval);
-  }, []);
+  const handleMouseMove = (e: React.MouseEvent<HTMLButtonElement>) => {
+    if (!btnRef.current) return;
+    const rect = btnRef.current.getBoundingClientRect();
+    setMousePos({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+    });
+  };
 
   return (
-    <motion.div
-      className="absolute rounded-full pointer-events-none"
-      style={{
-        left: `${pos.x}%`,
-        top: `${pos.y}%`,
-        width: "3px",
-        height: "3px",
-        background: "radial-gradient(circle, rgba(109,93,251,0.9) 0%, rgba(0,212,255,0.6) 50%, transparent 100%)",
-        boxShadow: "0 0 6px 2px rgba(109,93,251,0.3)",
-      }}
-      initial={{ opacity: 0, scale: 0 }}
-      animate={{
-        opacity: [0, 1, 1, 0],
-        scale: [0, 1.2, 1, 0],
-      }}
-      transition={{
-        duration: 2.5,
-        delay,
-        repeat: Infinity,
-        repeatDelay: 3 + Math.random() * 5,
-        ease: "easeInOut",
-      }}
-    />
+    <button
+      ref={btnRef}
+      onClick={onSelect}
+      onMouseMove={handleMouseMove}
+      className={`relative group rounded-2xl px-4 py-4 text-left transition-all duration-300 overflow-hidden cursor-pointer flex flex-col justify-between ${
+        isActive
+          ? "border border-purple/60 bg-purple/10 dark:bg-purple/15 shadow-lg shadow-purple/10"
+          : "border border-slate-200/80 dark:border-white/[0.06] bg-slate-50/80 dark:bg-white/[0.02] hover:border-slate-300 dark:hover:border-white/[0.12] hover:bg-slate-100 dark:hover:bg-white/[0.04]"
+      }`}
+    >
+      {/* ── Spotlight Radial Glow Following Cursor ── */}
+      <div
+        className="pointer-events-none absolute -inset-px rounded-2xl opacity-0 transition-opacity duration-300 group-hover:opacity-100 z-10"
+        style={{
+          background: `radial-gradient(150px circle at ${mousePos.x}px ${mousePos.y}px, rgba(109, 93, 251, 0.25), transparent 80%)`,
+        }}
+      />
+
+      <div className="flex items-center justify-between w-full relative z-20">
+        <span
+          className={`text-[10px] font-mono font-bold tracking-[0.2em] transition-colors duration-300 ${
+            isActive ? "text-[#6D5DFB]" : "text-slate-400 dark:text-silver/35 group-hover:text-purple"
+          }`}
+        >
+          {service.num}
+        </span>
+        {isActive && (
+          <span className="w-1.5 h-1.5 rounded-full bg-[#00D4FF] shadow-[0_0_6px_#00D4FF]" />
+        )}
+      </div>
+
+      <div className="mt-3 relative z-20">
+        <p
+          className={`text-xs sm:text-sm font-bold font-cabinet tracking-tight leading-snug transition-colors duration-300 ${
+            isActive
+              ? "text-slate-900 dark:text-white"
+              : "text-slate-700 dark:text-silver/60 group-hover:text-slate-950 dark:group-hover:text-white"
+          }`}
+        >
+          {service.title}
+        </p>
+        <span className="text-[9px] uppercase tracking-wider text-[#6D5DFB] dark:text-[#8A63FF] font-medium block mt-1 opacity-85">
+          {service.badge}
+        </span>
+      </div>
+
+      {/* Active bottom gradient accent */}
+      {isActive && (
+        <motion.div
+          layoutId="activeServiceLine"
+          className="absolute bottom-0 left-3 right-3 h-[2px] rounded-full gradient-aurora"
+          transition={{ type: "spring", stiffness: 380, damping: 30 }}
+        />
+      )}
+    </button>
   );
 }
 
 /* ═══════════════════════════════════════════════════════
-   MAIN COMPONENT
+   MAIN SERVICES COMPONENT
    ═══════════════════════════════════════════════════════ */
 export default function Services() {
   const [active, setActive] = useState(0);
@@ -127,12 +176,9 @@ export default function Services() {
   const mouseX = useSpring(rawMouseX, springConfig);
   const mouseY = useSpring(rawMouseY, springConfig);
 
-  // Image parallax: subtle drift
   const imgX = useTransform(mouseX, [0, 1], [8, -8]);
   const imgY = useTransform(mouseY, [0, 1], [5, -5]);
-  const imgScale = useTransform(mouseX, [0, 0.5, 1], [1.06, 1.04, 1.06]);
 
-  // Glow position
   const glowX = useTransform(mouseX, [0, 1], ["20%", "80%"]);
   const glowY = useTransform(mouseY, [0, 1], ["20%", "80%"]);
 
@@ -154,39 +200,39 @@ export default function Services() {
   const currentService = services[active];
 
   return (
-    <section id="services" className="py-16 md:py-24 lg:py-28 relative overflow-hidden">
+    <section id="services" className="py-20 md:py-28 relative overflow-hidden">
       {/* Background volumetric glow */}
       <div className="absolute top-1/2 left-1/2 w-[900px] h-[900px] bg-[#6D5DFB]/5 rounded-full blur-[200px] pointer-events-none -translate-x-1/2 -translate-y-1/2" />
 
       <div className="max-w-7xl mx-auto px-6 relative z-10">
-        {/* ── Section header ── */}
-        <div className="flex flex-col items-center text-center max-w-3xl mx-auto mb-8 md:mb-12">
+        {/* ── Section Header ── */}
+        <div className="flex flex-col items-center text-center max-w-3xl mx-auto mb-10 md:mb-14">
           <span className="text-xs uppercase tracking-[0.3em] font-medium text-[#6D5DFB]">
             SERVICIOS
           </span>
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold font-cabinet text-slate-900 dark:text-white mt-4 tracking-tight">
-            Lo Que Hacemos
+          <h2 className="text-4xl md:text-5xl font-bold font-cabinet text-slate-900 dark:text-white mt-3 tracking-tight">
+            Soluciones de Alto Impacto
           </h2>
-          <p className="text-lg text-slate-600 dark:text-silver/70 mt-4 max-w-2xl font-normal leading-relaxed">
-            Experiencias digitales cinematográficas que elevan marcas e impulsan el crecimiento.
+          <p className="text-base text-slate-600 dark:text-silver/60 mt-3 max-w-2xl font-normal leading-relaxed">
+            Ingeniería de software, diseño interactivo y sistemas de inteligencia artificial para marcas que lideran.
           </p>
         </div>
 
         {/* ══════════════════════════════════════════════════
-            CINEMATIC PANEL — upper 70%
+            CINEMATIC SERVICE DISPLAY
            ══════════════════════════════════════════════════ */}
         <div
           ref={panelRef}
           onMouseMove={handlePanelMouseMove}
           onMouseLeave={handlePanelMouseLeave}
-          className="relative w-full rounded-3xl overflow-hidden border border-white/[0.06] aspect-[1.1/1] sm:aspect-[1.5/1] md:aspect-[1.9/1] lg:aspect-[2.5/1] max-h-[480px] min-h-[420px] lg:min-h-0 group/panel"
+          className="relative w-full rounded-3xl overflow-hidden border border-slate-200/80 dark:border-white/[0.08] aspect-[1.1/1] sm:aspect-[1.5/1] md:aspect-[1.9/1] lg:aspect-[2.4/1] max-h-[480px] min-h-[420px] lg:min-h-0 group/panel shadow-2xl shadow-purple/10"
           style={{
-            background: "#0A0C14",
+            background: "#080a12",
             perspective: "1600px",
             transformStyle: "preserve-3d",
           }}
         >
-          {/* ── Crossfading background images — cinematic 3D Y-axis flip ── */}
+          {/* ── Crossfading background images with smooth 3D flip ── */}
           <AnimatePresence initial={false} custom={direction}>
             <motion.div
               key={currentService.image}
@@ -198,11 +244,11 @@ export default function Services() {
               custom={direction}
               variants={{
                 enter: (dir: number) => ({
-                  rotateY: dir * 75,
-                  x: `${dir * 40}%`,
-                  scale: 0.8,
+                  rotateY: dir * 60,
+                  x: `${dir * 30}%`,
+                  scale: 0.85,
                   opacity: 0,
-                  filter: "blur(12px) brightness(1.3)",
+                  filter: "blur(10px) brightness(1.2)",
                 }),
                 center: {
                   rotateY: 0,
@@ -213,11 +259,11 @@ export default function Services() {
                   zIndex: 2,
                 },
                 exit: (dir: number) => ({
-                  rotateY: -dir * 75,
-                  x: `${-dir * 40}%`,
-                  scale: 0.8,
+                  rotateY: -dir * 60,
+                  x: `${-dir * 30}%`,
+                  scale: 0.85,
                   opacity: 0,
-                  filter: "blur(8px) brightness(0.7)",
+                  filter: "blur(8px) brightness(0.8)",
                   zIndex: 1,
                 }),
               }}
@@ -228,8 +274,8 @@ export default function Services() {
                 x: { type: "spring", stiffness: 100, damping: 20, mass: 0.8 },
                 rotateY: { type: "spring", stiffness: 100, damping: 20, mass: 0.8 },
                 scale: { type: "spring", stiffness: 100, damping: 20, mass: 0.8 },
-                opacity: { duration: 0.6 },
-                filter: { duration: 0.6 },
+                opacity: { duration: 0.5 },
+                filter: { duration: 0.5 },
               }}
             >
               <motion.img
@@ -240,7 +286,6 @@ export default function Services() {
                   x: imgX,
                   y: imgY,
                 }}
-                /* Slow Ken Burns drift while active */
                 animate={{
                   scale: [1.05, 1.12],
                 }}
@@ -252,187 +297,93 @@ export default function Services() {
             </motion.div>
           </AnimatePresence>
 
-          {/* ── Cinematic Light Leak Transition Flash ── */}
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={`leak-${active}`}
-              className="absolute inset-0 pointer-events-none z-[3] mix-blend-screen"
-              initial={{ opacity: 0 }}
-              animate={{
-                opacity: [0, 0.35, 0],
-              }}
-              transition={{
-                duration: 0.8,
-                times: [0, 0.2, 1],
-                ease: "easeInOut",
-              }}
-              style={{
-                background: "radial-gradient(circle at 70% 30%, rgba(109,93,251,0.4) 0%, rgba(0,212,255,0.25) 45%, transparent 70%)",
-                filter: "blur(40px)",
-              }}
-            />
-          </AnimatePresence>
-
-          {/* ── Subtle vignette optimized for text readability without box background ── */}
+          {/* ── Vignette for text readability ── */}
           <div
             className="absolute inset-0 pointer-events-none z-[1]"
             style={{
               background:
-                "linear-gradient(180deg, rgba(9,11,18,0.15) 0%, transparent 40%, rgba(9,11,18,0.45) 100%), linear-gradient(90deg, rgba(9,11,18,0.75) 0%, rgba(9,11,18,0.35) 45%, transparent 80%)",
+                "linear-gradient(180deg, rgba(8,10,18,0.2) 0%, transparent 35%, rgba(8,10,18,0.7) 100%), linear-gradient(90deg, rgba(8,10,18,0.85) 0%, rgba(8,10,18,0.4) 45%, transparent 80%)",
             }}
           />
 
           {/* ── Dynamic ambient glow following mouse ── */}
           <motion.div
-            className="absolute w-[400px] h-[400px] rounded-full pointer-events-none z-[1]"
+            className="absolute w-[450px] h-[450px] rounded-full pointer-events-none z-[1]"
             style={{
               left: glowX,
               top: glowY,
               x: "-50%",
               y: "-50%",
               background:
-                "radial-gradient(circle, rgba(109,93,251,0.12) 0%, rgba(0,212,255,0.06) 40%, transparent 70%)",
+                "radial-gradient(circle, rgba(109,93,251,0.18) 0%, rgba(0,212,255,0.08) 40%, transparent 70%)",
               filter: "blur(60px)",
             }}
           />
 
-          {/* ── Content overlay — left-aligned, glassmorphism ── */}
+          {/* ── Content overlay ── */}
           <div className="absolute inset-0 z-[2] flex items-end p-6 sm:p-8 md:p-10 lg:p-12">
             <AnimatePresence mode="wait">
               <motion.div
                 key={active}
-                initial={{ opacity: 0, y: 30, scale: 0.97, filter: "blur(10px)" }}
-                animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
-                exit={{ opacity: 0, y: -15, scale: 0.98, filter: "blur(6px)" }}
-                transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
-                className="max-w-md w-full"
+                initial={{ opacity: 0, y: 25, filter: "blur(8px)" }}
+                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                exit={{ opacity: 0, y: -12, filter: "blur(4px)" }}
+                transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
+                className="max-w-lg w-full"
               >
-                {/* Minimalist container */}
-                <motion.div
-                  className="w-full flex flex-col items-start"
-                  variants={{
-                    hidden: { opacity: 0 },
-                    visible: {
-                      opacity: 1,
-                      transition: {
-                        staggerChildren: 0.06,
-                        delayChildren: 0.05,
-                      },
-                    },
-                  }}
-                  initial="hidden"
-                  animate="visible"
-                >
-                  {/* Service number */}
-                  <motion.span
-                    variants={{
-                      hidden: { opacity: 0, y: 10 },
-                      visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
-                    }}
-                    className="text-xs font-medium text-[#6D5DFB] tracking-[0.2em] uppercase block"
-                  >
-                    {currentService.num} — Servicio
-                  </motion.span>
+                <div className="w-full flex flex-col items-start">
+                  {/* Badge */}
+                  <span className="text-[10px] uppercase tracking-[0.2em] font-bold text-white px-3 py-1 rounded-full gradient-aurora shadow-sm mb-3">
+                    {currentService.badge}
+                  </span>
 
                   {/* Title */}
-                  <motion.h3
-                    variants={{
-                      hidden: { opacity: 0, y: 15 },
-                      visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
-                    }}
-                    className="text-xl sm:text-2xl md:text-3xl font-bold font-cabinet text-white mt-2 tracking-tight leading-tight"
-                  >
+                  <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold font-cabinet text-white tracking-tight leading-tight">
                     {currentService.title}
-                  </motion.h3>
+                  </h3>
 
                   {/* Description */}
-                  <motion.p
-                    variants={{
-                      hidden: { opacity: 0, y: 15 },
-                      visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
-                    }}
-                    className="text-sm text-silver/70 mt-3 leading-relaxed"
-                  >
+                  <p className="text-sm text-silver/80 mt-2.5 leading-relaxed max-w-md">
                     {currentService.description}
-                  </motion.p>
+                  </p>
 
                   {/* Features list */}
-                  <motion.ul
-                    variants={{
-                      hidden: { opacity: 0 },
-                      visible: {
-                        opacity: 1,
-                        transition: {
-                          staggerChildren: 0.04,
-                        },
-                      },
-                    }}
-                    className="mt-4 grid grid-cols-2 gap-x-4 gap-y-1.5"
-                  >
+                  <ul className="mt-4 grid grid-cols-2 gap-x-4 gap-y-2 w-full max-w-md">
                     {currentService.features.map((feature) => (
-                      <motion.li
-                        key={feature}
-                        variants={{
-                          hidden: { opacity: 0, x: -8 },
-                          visible: { opacity: 1, x: 0, transition: { duration: 0.3 } },
-                        }}
-                        className="flex items-center gap-2.5 text-sm text-silver/60"
-                      >
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#6D5DFB] shrink-0" />
+                      <li key={feature} className="flex items-center gap-2 text-xs text-silver/70">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#00D4FF] shrink-0" />
                         {feature}
-                      </motion.li>
+                      </li>
                     ))}
-                  </motion.ul>
+                  </ul>
 
-                  {/* CTA */}
-                  <motion.div
-                    variants={{
-                      hidden: { opacity: 0, y: 15 },
-                      visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
-                    }}
+                  {/* CTA Link */}
+                  <a
+                    href="#portfolio"
+                    className="inline-flex items-center gap-2 mt-6 px-6 py-2.5 rounded-full text-xs uppercase tracking-[0.2em] font-semibold text-white gradient-aurora hover:shadow-[0_0_25px_rgba(109,93,251,0.5)] transition-all duration-300 btn-glow hover:scale-105"
                   >
-                    <a
-                      href="#portfolio"
-                      className="inline-flex items-center gap-2 mt-5 px-5 py-2.5 rounded-full text-sm font-medium text-white gradient-aurora hover:shadow-[0_0_30px_rgba(109,93,251,0.35)] transition-all duration-300"
-                    >
-                      {currentService.cta}
-                      <svg
-                        className="w-4 h-4"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        viewBox="0 0 24 24"
-                      >
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-                      </svg>
-                    </a>
-                  </motion.div>
-                </motion.div>
+                    <span>{currentService.cta}</span>
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                    </svg>
+                  </a>
+                </div>
               </motion.div>
             </AnimatePresence>
           </div>
 
-          {/* ── Top-right navigation controls ── */}
-          <div className="absolute top-4 right-4 sm:top-6 sm:right-6 z-[4] flex items-center gap-2 opacity-60 md:opacity-0 md:group-hover/panel:opacity-100 transition-opacity duration-350">
+          {/* ── Top-right Navigation Arrows ── */}
+          <div className="absolute top-4 right-4 sm:top-6 sm:right-6 z-[4] flex items-center gap-2">
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 const prevIndex = (active - 1 + services.length) % services.length;
                 handleActiveChange(prevIndex);
               }}
-              className="w-10 h-10 rounded-full bg-white/[0.03] hover:bg-white/[0.08] border border-white/[0.05] hover:border-white/[0.15] flex items-center justify-center text-white/35 hover:text-white/85 transition-all duration-300 backdrop-blur-md cursor-pointer hover:scale-105 active:scale-95"
+              className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 border border-white/10 flex items-center justify-center text-white/70 hover:text-white transition-all backdrop-blur-md cursor-pointer hover:scale-105 active:scale-95"
               aria-label="Anterior"
             >
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="15 18 9 12 15 6" />
               </svg>
             </button>
@@ -443,19 +394,10 @@ export default function Services() {
                 const nextIndex = (active + 1) % services.length;
                 handleActiveChange(nextIndex);
               }}
-              className="w-10 h-10 rounded-full bg-white/[0.03] hover:bg-white/[0.08] border border-white/[0.05] hover:border-white/[0.15] flex items-center justify-center text-white/35 hover:text-white/85 transition-all duration-300 backdrop-blur-md cursor-pointer hover:scale-105 active:scale-95"
+              className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 border border-white/10 flex items-center justify-center text-white/70 hover:text-white transition-all backdrop-blur-md cursor-pointer hover:scale-105 active:scale-95"
               aria-label="Siguiente"
             >
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="9 18 15 12 9 6" />
               </svg>
             </button>
@@ -463,73 +405,18 @@ export default function Services() {
         </div>
 
         {/* ══════════════════════════════════════════════════
-            SERVICE SELECTOR CARDS — bottom strip
+            SERVICE SELECTOR CARDS WITH SPOTLIGHT GLOW
            ══════════════════════════════════════════════════ */}
         <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-          {services.map((service, index) => {
-            const isActive = index === active;
-            return (
-              <button
-                key={index}
-                onClick={() => handleActiveChange(index)}
-                className={`relative group rounded-xl px-4 py-5 text-left transition-all duration-500 overflow-hidden cursor-pointer ${
-                  isActive
-                    ? "border border-[#6D5DFB]/40 bg-[#6D5DFB]/[0.08]"
-                    : "border border-slate-200 dark:border-white/[0.05] bg-slate-50 dark:bg-white/[0.02] hover:border-slate-300 dark:hover:border-white/[0.12] hover:bg-slate-100 dark:hover:bg-white/[0.04]"
-                }`}
-              >
-                {/* Active glow */}
-                {isActive && (
-                  <motion.div
-                    layoutId="serviceGlow"
-                    className="absolute inset-0 rounded-xl pointer-events-none"
-                    style={{
-                      boxShadow: "0 0 40px rgba(109,93,251,0.15), inset 0 0 30px rgba(109,93,251,0.05)",
-                    }}
-                    transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                  />
-                )}
-
-                {/* Sparkles on inactive cards */}
-                {!isActive && (
-                  <>
-                    <Sparkle delay={Math.random() * 3} />
-                    <Sparkle delay={1.5 + Math.random() * 3} />
-                  </>
-                )}
-
-                {/* Number */}
-                <span
-                  className={`text-xs font-semibold tracking-[0.15em] transition-colors duration-300 ${
-                    isActive ? "text-[#6D5DFB]" : "text-slate-400 dark:text-silver/30 group-hover:text-slate-600 dark:group-hover:text-silver/50"
-                  }`}
-                >
-                  {service.num}
-                </span>
-
-                {/* Title */}
-                <p
-                  className={`text-sm font-medium mt-1.5 tracking-tight leading-snug transition-colors duration-300 ${
-                    isActive ? "text-slate-900 dark:text-white" : "text-slate-500 dark:text-silver/50 group-hover:text-slate-800 dark:group-hover:text-silver/80"
-                  }`}
-                >
-                  {service.title}
-                </p>
-
-                {/* Active indicator line */}
-                {isActive && (
-                  <motion.div
-                    layoutId="activeIndicator"
-                    className="absolute bottom-0 left-4 right-4 h-[2px] rounded-full"
-                    style={{
-                      background: "linear-gradient(90deg, #6D5DFB, #00D4FF)",
-                    }}
-                    transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                  />
-                )}
-              </button>
-            );
-          })}
+          {services.map((service, index) => (
+            <ServicePill
+              key={service.num}
+              service={service}
+              index={index}
+              isActive={index === active}
+              onSelect={() => handleActiveChange(index)}
+            />
+          ))}
         </div>
       </div>
     </section>
