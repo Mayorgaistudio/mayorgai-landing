@@ -80,84 +80,40 @@ export default function Hero() {
     return () => observer.disconnect();
   }, []);
 
-  // Normalized raw mouse X & Y
+  // Normalized raw mouse X (LERP handles easing in RAF)
   const rawX = useMotionValue(0.5);
   const rawY = useMotionValue(0.5);
-  const lastMoveTimeRef = useRef<number>(Date.now());
 
-  // Subtle 3D tilt for the console frame (reduced to ~3.5deg so the head turn has clear focal hierarchy)
-  const springCss = { stiffness: 65, damping: 22, mass: 0.5 };
+  // Springs for 3D tilt, parallax and ambient glow movement
+  const springCss = { stiffness: 70, damping: 20, mass: 0.5 };
   const springX   = useSpring(rawX, springCss);
   const springY   = useSpring(rawY, springCss);
 
-  const rotateY = useTransform(springX, [0, 1], [-3.5, 3.5]);
-  const rotateX = useTransform(springY, [0, 1], [2, -2]);
-  const leftX   = useTransform(springX, [0, 1], [4, -4]);
-  const rightX  = useTransform(springX, [0, 1], [-4, 4]);
-  const glowX   = useTransform(springX, [0, 1], ["-12%", "12%"]);
-  const glowY   = useTransform(springY, [0, 1], ["-6%", "6%"]);
+  const rotateY = useTransform(springX, [0, 1], [-6, 6]);
+  const rotateX = useTransform(springY, [0, 1], [3, -3]);
+  const leftX   = useTransform(springX, [0, 1], [6, -6]);
+  const rightX  = useTransform(springX, [0, 1], [-6, 6]);
+  const glowX   = useTransform(springX, [0, 1], ["-15%", "15%"]);
+  const glowY   = useTransform(springY, [0, 1], ["-8%", "8%"]);
 
-  // ── Global window mouse tracking for instant, unrestricted responsiveness ──
-  useEffect(() => {
-    const onWindowMouseMove = (e: MouseEvent) => {
-      lastMoveTimeRef.current = Date.now();
-      rawX.set(e.clientX / window.innerWidth);
-      rawY.set(e.clientY / window.innerHeight);
-    };
-
-    window.addEventListener("mousemove", onWindowMouseMove, { passive: true });
-    return () => window.removeEventListener("mousemove", onWindowMouseMove);
-  }, [rawX, rawY]);
-
-  // ── Kinematic Organic Mapping calibrated to video true angles ──
-  // Video keyframe: 0.92 is Looking Dead Center, 0.10 is Full Turn
-  const CENTER_FRAME = 0.92;
-  const MAX_TURN_SPAN = 0.82; // sweeps from 0.92 down to 0.10 for full turn
-
-  // ── Canvas scrubbing with Organic Kinematics (Dual Video: Dark + Light) ──
+  // ── Canvas scrubbing with LERP (Dual Video Engine: Dark + Light) ──
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    let currentOffset = 0; // 0 = center (0.92), > 0 = turning head
-    let isFlipped = false; // true when looking to the left
+    let currentT = 0.5; // current lerped position (0-1)
     let rafId: number;
 
     const tick = () => {
-      const now = Date.now();
-      const isInactive = (now - lastMoveTimeRef.current) > 2200;
-      const rawTarget = rawX.get();
-      const delta = rawTarget - 0.5; // -0.5 (left) to +0.5 (right)
-
-      let targetOffset = 0;
-      let targetFlipped = isFlipped;
-
-      if (isInactive) {
-        // Natural micro-breathing centered
-        targetOffset = Math.sin(now * 0.0012) * 0.01;
-      } else {
-        const absDelta = Math.abs(delta);
-        const progress = Math.min(1, absDelta * 2);
-        // Smooth non-linear acceleration
-        targetOffset = Math.pow(progress, 1.15) * MAX_TURN_SPAN;
-        targetFlipped = delta < -0.01;
-      }
-
-      // Only switch flip when passing near center to prevent any visual jump
-      if (currentOffset < 0.05) {
-        isFlipped = targetFlipped;
-      }
-
-      // Smooth weighted interpolation
-      currentOffset += (targetOffset - currentOffset) * 0.08;
-
-      const videoTime = Math.max(0.05, Math.min(0.95, CENTER_FRAME - currentOffset));
+      const targetT = rawX.get();
+      // Smooth interpolation — 0.05 gives balanced cinematic inertia
+      currentT += (targetT - currentT) * 0.05;
 
       const activeVideo = isDark ? videoDarkRef.current : videoLightRef.current;
       if (activeVideo && activeVideo.readyState >= 2 && activeVideo.duration && isFinite(activeVideo.duration)) {
-        activeVideo.currentTime = videoTime * activeVideo.duration;
+        activeVideo.currentTime = currentT * activeVideo.duration;
 
         // Keep canvas in sync with video dimensions
         if (canvas.width !== activeVideo.videoWidth && activeVideo.videoWidth > 0) {
@@ -165,15 +121,7 @@ export default function Hero() {
           canvas.height = activeVideo.videoHeight;
         }
 
-        if (isFlipped) {
-          ctx.save();
-          ctx.translate(canvas.width, 0);
-          ctx.scale(-1, 1);
-          ctx.drawImage(activeVideo, 0, 0, canvas.width, canvas.height);
-          ctx.restore();
-        } else {
-          ctx.drawImage(activeVideo, 0, 0, canvas.width, canvas.height);
-        }
+        ctx.drawImage(activeVideo, 0, 0, canvas.width, canvas.height);
       }
 
       rafId = requestAnimationFrame(tick);
@@ -187,7 +135,7 @@ export default function Hero() {
           canvas.width  = video.videoWidth;
           canvas.height = video.videoHeight;
         }
-        video.currentTime = CENTER_FRAME * (video.duration || 1);
+        video.currentTime = 0.5 * (video.duration || 1);
       };
       video.addEventListener("loadedmetadata", onMeta);
       if (video.readyState >= 1) onMeta();
@@ -204,7 +152,6 @@ export default function Hero() {
   }, [rawX, isDark]);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLElement>) => {
-    lastMoveTimeRef.current = Date.now();
     const rect = sectionRef.current?.getBoundingClientRect();
     if (!rect) return;
     rawX.set((e.clientX - rect.left) / rect.width);
@@ -212,7 +159,6 @@ export default function Hero() {
   };
 
   const handleMouseLeave = () => {
-    lastMoveTimeRef.current = 0; // trigger smooth return to center
     rawX.set(0.5);
     rawY.set(0.5);
   };
