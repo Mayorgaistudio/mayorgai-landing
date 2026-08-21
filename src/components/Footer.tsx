@@ -147,11 +147,21 @@ export default function Footer() {
 
         </div>
 
-        {/* ── MONUMENTAL BRAND WATERMARK ── */}
-        <div className="pt-10 pb-4 text-center overflow-hidden">
+        {/* ── MONUMENTAL BRAND MARK (AURORA SHIMMER & HALO ECLIPSE) ── */}
+        <div className="relative pt-12 pb-6 text-center overflow-hidden flex items-center justify-center">
+          {/* Central Volumetric Glow Halo */}
+          <div
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-[850px] h-[190px] rounded-full blur-[70px] pointer-events-none opacity-85 dark:opacity-95"
+            style={{
+              background:
+                "radial-gradient(ellipse at 50% 50%, rgba(109,93,251,0.38) 0%, rgba(0,212,255,0.2) 45%, transparent 80%)",
+            }}
+          />
+
+          {/* Luminous Monumental Typography */}
           <span
-            className="text-[15vw] font-black font-cabinet leading-none tracking-tighter text-slate-900/[0.04] dark:text-white/[0.03] block select-none pointer-events-none"
-            style={{ letterSpacing: "-0.04em" }}
+            className="relative z-10 text-[13vw] sm:text-[14vw] font-black font-cabinet leading-none tracking-tight block select-none pointer-events-none text-transparent bg-clip-text bg-gradient-to-b from-slate-900 via-purple-dark to-slate-700 dark:from-white dark:via-purple-light/90 dark:to-cyan/80 drop-shadow-[0_10px_40px_rgba(109,93,251,0.35)] transition-all duration-300"
+            style={{ letterSpacing: "-0.035em" }}
           >
             MAYORGAI
           </span>
