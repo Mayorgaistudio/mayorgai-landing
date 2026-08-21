@@ -110,28 +110,9 @@ export default function Hero() {
   }, [rawX, rawY]);
 
   // ── Kinematic Organic Mapping calibrated to video true angles ──
-  // Video true keyframes: 0.15 = Looking Right, 0.92 = Looking Dead Center, 1.00 = Looking Left
+  // Video keyframe: 0.92 is Looking Dead Center, 0.10 is Full Turn
   const CENTER_FRAME = 0.92;
-  const LEFT_FRAME   = 1.00;
-  const RIGHT_FRAME  = 0.15;
-
-  const getOrganicTarget = (val: number, isInactive: boolean, time: number): number => {
-    if (isInactive) {
-      // Subtle natural breathing micro-motion centered looking at the user
-      return CENTER_FRAME + Math.sin(time * 0.0012) * 0.006;
-    }
-    const delta = val - 0.5; // -0.5 (left) to +0.5 (right)
-
-    if (delta < 0) {
-      // Mouse moving to the LEFT -> smoothly sweep from 0.92 to 1.00
-      const progress = Math.min(1, Math.abs(delta) * 2);
-      return CENTER_FRAME + progress * (LEFT_FRAME - CENTER_FRAME);
-    } else {
-      // Mouse moving to the RIGHT -> smoothly sweep from 0.92 to 0.15
-      const progress = Math.min(1, Math.abs(delta) * 2);
-      return CENTER_FRAME - progress * (CENTER_FRAME - RIGHT_FRAME);
-    }
-  };
+  const MAX_TURN_SPAN = 0.82; // sweeps from 0.92 down to 0.10 for full turn
 
   // ── Canvas scrubbing with Organic Kinematics (Dual Video: Dark + Light) ──
   useEffect(() => {
@@ -140,22 +121,43 @@ export default function Hero() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    let currentT = 0.92; // initial calibrated center position
+    let currentOffset = 0; // 0 = center (0.92), > 0 = turning head
+    let isFlipped = false; // true when looking to the left
     let rafId: number;
 
     const tick = () => {
       const now = Date.now();
       const isInactive = (now - lastMoveTimeRef.current) > 2200;
       const rawTarget = rawX.get();
-      const targetT = getOrganicTarget(rawTarget, isInactive, now);
+      const delta = rawTarget - 0.5; // -0.5 (left) to +0.5 (right)
 
-      // Smooth weighted LERP
-      const diff = targetT - currentT;
-      currentT += diff * 0.08;
+      let targetOffset = 0;
+      let targetFlipped = isFlipped;
+
+      if (isInactive) {
+        // Natural micro-breathing centered
+        targetOffset = Math.sin(now * 0.0012) * 0.01;
+      } else {
+        const absDelta = Math.abs(delta);
+        const progress = Math.min(1, absDelta * 2);
+        // Smooth non-linear acceleration
+        targetOffset = Math.pow(progress, 1.15) * MAX_TURN_SPAN;
+        targetFlipped = delta < -0.01;
+      }
+
+      // Only switch flip when passing near center to prevent any visual jump
+      if (currentOffset < 0.05) {
+        isFlipped = targetFlipped;
+      }
+
+      // Smooth weighted interpolation
+      currentOffset += (targetOffset - currentOffset) * 0.08;
+
+      const videoTime = Math.max(0.05, Math.min(0.95, CENTER_FRAME - currentOffset));
 
       const activeVideo = isDark ? videoDarkRef.current : videoLightRef.current;
       if (activeVideo && activeVideo.readyState >= 2 && activeVideo.duration && isFinite(activeVideo.duration)) {
-        activeVideo.currentTime = currentT * activeVideo.duration;
+        activeVideo.currentTime = videoTime * activeVideo.duration;
 
         // Keep canvas in sync with video dimensions
         if (canvas.width !== activeVideo.videoWidth && activeVideo.videoWidth > 0) {
@@ -163,7 +165,15 @@ export default function Hero() {
           canvas.height = activeVideo.videoHeight;
         }
 
-        ctx.drawImage(activeVideo, 0, 0, canvas.width, canvas.height);
+        if (isFlipped) {
+          ctx.save();
+          ctx.translate(canvas.width, 0);
+          ctx.scale(-1, 1);
+          ctx.drawImage(activeVideo, 0, 0, canvas.width, canvas.height);
+          ctx.restore();
+        } else {
+          ctx.drawImage(activeVideo, 0, 0, canvas.width, canvas.height);
+        }
       }
 
       rafId = requestAnimationFrame(tick);
@@ -177,7 +187,7 @@ export default function Hero() {
           canvas.width  = video.videoWidth;
           canvas.height = video.videoHeight;
         }
-        video.currentTime = 0.92 * (video.duration || 1);
+        video.currentTime = CENTER_FRAME * (video.duration || 1);
       };
       video.addEventListener("loadedmetadata", onMeta);
       if (video.readyState >= 1) onMeta();
