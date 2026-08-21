@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import {
   motion,
   useMotionValue,
@@ -55,9 +55,30 @@ function FilmGrain() {
 }
 
 export default function Hero() {
-  const sectionRef  = useRef<HTMLElement>(null);
-  const videoRef    = useRef<HTMLVideoElement>(null);
-  const canvasRef   = useRef<HTMLCanvasElement>(null);
+  const sectionRef      = useRef<HTMLElement>(null);
+  const videoDarkRef    = useRef<HTMLVideoElement>(null);
+  const videoLightRef   = useRef<HTMLVideoElement>(null);
+  const canvasRef       = useRef<HTMLCanvasElement>(null);
+  const [isDark, setIsDark] = useState(true);
+
+  // ── Listen to theme changes in real-time ──
+  useEffect(() => {
+    const checkTheme = () => {
+      setIsDark(document.documentElement.classList.contains("dark"));
+    };
+    checkTheme();
+
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.attributeName === "class") {
+          checkTheme();
+        }
+      });
+    });
+
+    observer.observe(document.documentElement, { attributes: true });
+    return () => observer.disconnect();
+  }, []);
 
   // Normalized raw mouse X (LERP handles easing in RAF)
   const rawX = useMotionValue(0.5);
@@ -75,11 +96,10 @@ export default function Hero() {
   const glowX   = useTransform(springX, [0, 1], ["-20%", "20%"]);
   const glowY   = useTransform(springY, [0, 1], ["-10%", "10%"]);
 
-  // ── Canvas scrubbing with LERP ──
+  // ── Canvas scrubbing with LERP (Dual Video Engine: Dark + Light) ──
   useEffect(() => {
-    const video  = videoRef.current;
     const canvas = canvasRef.current;
-    if (!video || !canvas) return;
+    if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
@@ -91,30 +111,45 @@ export default function Hero() {
       // Smooth interpolation — 0.05 gives balanced cinematic inertia
       currentT += (targetT - currentT) * 0.05;
 
-      if (video.readyState >= 2 && video.duration && isFinite(video.duration)) {
-        video.currentTime = currentT * video.duration;
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const activeVideo = isDark ? videoDarkRef.current : videoLightRef.current;
+      if (activeVideo && activeVideo.readyState >= 2 && activeVideo.duration && isFinite(activeVideo.duration)) {
+        activeVideo.currentTime = currentT * activeVideo.duration;
+
+        // Keep canvas in sync with video dimensions
+        if (canvas.width !== activeVideo.videoWidth && activeVideo.videoWidth > 0) {
+          canvas.width  = activeVideo.videoWidth;
+          canvas.height = activeVideo.videoHeight;
+        }
+
+        ctx.drawImage(activeVideo, 0, 0, canvas.width, canvas.height);
       }
 
       rafId = requestAnimationFrame(tick);
     };
 
-    const onMeta = () => {
-      canvas.width  = video.videoWidth;
-      canvas.height = video.videoHeight;
-      video.currentTime = 0.5 * video.duration;
-      rafId = requestAnimationFrame(tick);
+    const setupVideo = (video: HTMLVideoElement | null) => {
+      if (!video) return;
+      video.load();
+      const onMeta = () => {
+        if (canvas && video.videoWidth > 0) {
+          canvas.width  = video.videoWidth;
+          canvas.height = video.videoHeight;
+        }
+        video.currentTime = 0.5 * (video.duration || 1);
+      };
+      video.addEventListener("loadedmetadata", onMeta);
+      if (video.readyState >= 1) onMeta();
     };
 
-    video.addEventListener("loadedmetadata", onMeta);
-    video.load();
-    if (video.readyState >= 1) onMeta();
+    setupVideo(videoDarkRef.current);
+    setupVideo(videoLightRef.current);
+
+    rafId = requestAnimationFrame(tick);
 
     return () => {
       cancelAnimationFrame(rafId);
-      video.removeEventListener("loadedmetadata", onMeta);
     };
-  }, [rawX]);
+  }, [rawX, isDark]);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLElement>) => {
     const rect = sectionRef.current?.getBoundingClientRect();
@@ -255,7 +290,7 @@ export default function Hero() {
           </motion.div>
 
           {/* ══════════════════════════
-              CENTER — Robot Canvas Display
+              CENTER — Robot Canvas Display (Dual Light/Dark Mode)
           ══════════════════════════ */}
           <motion.div
             initial={{ opacity: 0, scale: 0.88, y: 30 }}
@@ -275,26 +310,22 @@ export default function Hero() {
               >
                 {/* Premium Console Frame */}
                 <div
-                  className="relative rounded-[20px] p-[2px] shadow-2xl shadow-purple/15 dark:shadow-purple/20"
+                  className="relative rounded-[20px] p-[2px] shadow-2xl shadow-purple/15 dark:shadow-purple/20 transition-all duration-300"
                   style={{
                     width: "clamp(200px, 20vw, 280px)",
                     background:
                       "linear-gradient(135deg, rgba(109,93,251,0.7) 0%, rgba(0,212,255,0.3) 50%, rgba(109,93,251,0.5) 100%)",
                   }}
                 >
-                  <div className="rounded-[19px] overflow-hidden bg-black relative">
+                  <div className="rounded-[19px] overflow-hidden bg-white dark:bg-black relative transition-colors duration-300">
                     {/* Device Chrome Bar */}
                     <div
-                      className="h-[24px] flex items-center px-2.5 gap-1.5 border-b border-purple/20"
-                      style={{
-                        background:
-                          "linear-gradient(90deg, rgba(109,93,251,0.22), rgba(0,212,255,0.08))",
-                      }}
+                      className="h-[24px] flex items-center px-2.5 gap-1.5 border-b border-slate-200/80 dark:border-purple/20 bg-slate-100/90 dark:bg-gradient-to-r dark:from-purple/20 dark:to-cyan/10 transition-colors"
                     >
-                      {["rgba(251,109,109,0.75)", "rgba(251,200,109,0.75)", "rgba(109,251,130,0.75)"].map((c, i) => (
+                      {["rgba(251,109,109,0.85)", "rgba(251,200,109,0.85)", "rgba(109,251,130,0.85)"].map((c, i) => (
                         <div key={i} className="w-1.5 h-1.5 rounded-full" style={{ background: c }} />
                       ))}
-                      <span className="text-[8px] tracking-widest uppercase text-silver/30 ml-auto mr-1 font-mono">
+                      <span className="text-[8px] tracking-widest uppercase text-slate-500 dark:text-silver/30 ml-auto mr-1 font-mono">
                         JARVIS · ONLINE
                       </span>
                     </div>
@@ -302,13 +333,23 @@ export default function Hero() {
                     {/* Canvas displaying scrubbed video frames */}
                     <canvas
                       ref={canvasRef}
-                      className="block w-full h-auto bg-black"
+                      className="block w-full h-auto bg-white dark:bg-black transition-colors"
                     />
 
-                    {/* Hidden video decoder source */}
+                    {/* Hidden Dark Mode Video Source */}
                     <video
-                      ref={videoRef}
+                      ref={videoDarkRef}
                       src="/mascot/Personaje_gira_su_cabeza_202608201419.mp4"
+                      muted
+                      playsInline
+                      preload="auto"
+                      className="hidden"
+                    />
+
+                    {/* Hidden Light Mode Video Source (Jarvis_Blanco) */}
+                    <video
+                      ref={videoLightRef}
+                      src="/mascot/Jarvis_Blanco.mp4"
                       muted
                       playsInline
                       preload="auto"
@@ -317,7 +358,7 @@ export default function Hero() {
 
                     {/* Screen Scanline Texture */}
                     <div
-                      className="absolute inset-0 pointer-events-none"
+                      className="absolute inset-0 pointer-events-none opacity-30 dark:opacity-100"
                       style={{
                         backgroundImage:
                           "repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.08) 2px, rgba(0,0,0,0.08) 4px)",
@@ -326,7 +367,7 @@ export default function Hero() {
 
                     {/* Holographic Cyan Corner Flare */}
                     <div
-                      className="absolute top-6 right-0 w-[70px] h-[70px] pointer-events-none"
+                      className="absolute top-6 right-0 w-[70px] h-[70px] pointer-events-none opacity-60 dark:opacity-100"
                       style={{
                         background:
                           "radial-gradient(circle at top right, rgba(0,212,255,0.18), transparent 70%)",
@@ -335,7 +376,7 @@ export default function Hero() {
 
                     {/* Bottom Aurora Ambient Bloom */}
                     <div
-                      className="absolute bottom-0 left-0 right-0 h-[60px] pointer-events-none"
+                      className="absolute bottom-0 left-0 right-0 h-[60px] pointer-events-none opacity-40 dark:opacity-100"
                       style={{
                         background:
                           "linear-gradient(to top, rgba(109,93,251,0.15), transparent)",
