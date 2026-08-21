@@ -1,13 +1,7 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
-import {
-  motion,
-  useMotionValue,
-  useSpring,
-  useTransform,
-  useInView,
-} from "framer-motion";
+import { useRef, useState } from "react";
+import { motion, useInView } from "framer-motion";
 
 /* ═══════════════════════════════════════════════════════
    PROCESS DATA
@@ -15,469 +9,260 @@ import {
 const steps = [
   {
     num: "01",
-    title: "Descubrimiento",
+    phase: "Fase de Análisis",
+    title: "Descubrimiento & Estrategia",
     description:
-      "Nos sumergimos en tu negocio, objetivos y audiencia para construir la estrategia correcta.",
+      "Nos sumergimos en el ADN de tu negocio, analizando competidores, cuellos de botella y audiencia para estructurar un mapa de ruta claro hacia la rentabilidad.",
     image: "/jarvis-chubby/jarvis-detective.png",
-    milestones: [
-      "Brief estratégico",
-      "Investigación",
-      "Objetivos del proyecto",
-      "Público objetivo",
-      "Arquitectura inicial",
+    duration: "Semana 1",
+    deliverables: [
+      "Auditoría técnica & de marca",
+      "Arquitectura de conversión",
+      "Brief de requerimientos IA",
+      "Definición de KPIs",
     ],
     accent: "#6D5DFB",
+    gradient: "from-[#6D5DFB]/20 via-[#6D5DFB]/5 to-transparent",
   },
   {
     num: "02",
-    title: "Diseño",
+    phase: "Fase Visual & UX",
+    title: "Diseño & Prototipado Cinemático",
     description:
-      "Transformamos estrategia en experiencias visuales memorables y premium.",
+      "Convertimos la estrategia en experiencias visuales de alta gama. Cada layout, tipografía y micro-interacción está pensada para proyectar autoridad inmediata.",
     image: "/jarvis-chubby/jarvis-dise%C3%B1o.png",
-    milestones: [
-      "Moodboard",
-      "Wireframes",
-      "Sistema visual",
-      "Prototipos",
-      "Revisiones colaborativas",
+    duration: "Semana 2",
+    deliverables: [
+      "Sistema de diseño & UI Kit",
+      "Wireframes interactivos",
+      "Dirección de arte premium",
+      "Validación de flujos CRO",
     ],
     accent: "#8A63FF",
+    gradient: "from-[#8A63FF]/20 via-[#8A63FF]/5 to-transparent",
   },
   {
     num: "03",
-    title: "Desarrollo",
+    phase: "Fase de Ingeniería",
+    title: "Desarrollo & Automatización IA",
     description:
-      "Construimos tecnología moderna y experiencias digitales listas para escalar.",
+      "Construimos sobre Next.js 16 con código limpio, seguro y ultra rápido. Integramos agentes inteligentes, APIs y bases de datos preparadas para alto tráfico.",
     image: "/jarvis-chubby/jarvis-matrix.png",
-    milestones: [
-      "Desarrollo",
-      "Responsive",
-      "Optimización",
-      "Animaciones",
-      "Testing y QA",
+    duration: "Semana 3",
+    deliverables: [
+      "Desarrollo Full-Stack moderno",
+      "Integración de agentes IA",
+      "Optimización 100/100 Core Web Vitals",
+      "Testing exhaustivo QA",
     ],
     accent: "#00D4FF",
+    gradient: "from-[#00D4FF]/20 via-[#00D4FF]/5 to-transparent",
   },
   {
     num: "04",
-    title: "Escalabilidad",
+    phase: "Fase de Despliegue",
+    title: "Lanzamiento & Escalabilidad",
     description:
-      "Automatizamos y optimizamos para convertir crecimiento en sistema.",
+      "Publicamos tu plataforma en producción global con CDN de baja latencia, configuramos analítica avanzada y dejamos tus pipelines automáticos funcionando 24/7.",
     image: "/jarvis-chubby/jarvis-estratega.png",
-    milestones: [
-      "Automatizaciones",
-      "SEO y analítica",
-      "Integraciones",
-      "Infraestructura escalable",
-      "Optimización continua",
+    duration: "Semana 4",
+    deliverables: [
+      "Despliegue cloud global",
+      "Capacitación de uso de sistemas",
+      "Entrega de código fuente",
+      "Soporte y optimización continua",
     ],
     accent: "#6D5DFB",
+    gradient: "from-[#6D5DFB]/20 via-[#00D4FF]/5 to-transparent",
   },
 ];
 
 /* ═══════════════════════════════════════════════════════
-   HOLOGRAPHIC CHECK ICON
+   STICKY STACKING PROCESS CARD
    ═══════════════════════════════════════════════════════ */
-function HoloCheck() {
-  return (
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 18 18"
-      fill="none"
-      className="shrink-0"
-    >
-      <circle
-        cx="9"
-        cy="9"
-        r="8"
-        stroke="url(#holoGrad)"
-        strokeWidth="1.5"
-        fill="none"
-        opacity="0.5"
-      />
-      <path
-        d="M5.5 9.2L7.8 11.5L12.5 6.5"
-        stroke="url(#holoGrad)"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <defs>
-        <linearGradient
-          id="holoGrad"
-          x1="0"
-          y1="18"
-          x2="18"
-          y2="0"
-          gradientUnits="userSpaceOnUse"
-        >
-          <stop stopColor="#6D5DFB" />
-          <stop offset="0.5" stopColor="#8A63FF" />
-          <stop offset="1" stopColor="#00D4FF" />
-        </linearGradient>
-      </defs>
-    </svg>
-  );
-}
-
-/* ═══════════════════════════════════════════════════════
-   FLIP CARD COMPONENT
-   ═══════════════════════════════════════════════════════ */
-function FlipCard({
+function StickyProcessCard({
   step,
   index,
+  totalSteps,
 }: {
-  step: (typeof steps)[number];
+  step: (typeof steps)[0];
   index: number;
+  totalSteps: number;
 }) {
-  const [isFlipped, setIsFlipped] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
-  // ── Mouse parallax ──
-  const rawX = useMotionValue(0.5);
-  const rawY = useMotionValue(0.5);
-  const springConfig = { stiffness: 150, damping: 20, mass: 0.5 };
-  const mouseX = useSpring(rawX, springConfig);
-  const mouseY = useSpring(rawY, springConfig);
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!cardRef.current) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    setMousePos({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+    });
+  };
 
-  const rotateCardY = useTransform(mouseX, [0, 1], [-6, 6]);
-  const rotateCardX = useTransform(mouseY, [0, 1], [4, -4]);
-  const glowX = useTransform(mouseX, [0, 1], ["10%", "90%"]);
-  const glowY = useTransform(mouseY, [0, 1], ["10%", "90%"]);
-
-  const handleMouseMove = useCallback(
-    (e: React.MouseEvent<HTMLDivElement>) => {
-      if (isFlipped) return;
-      const rect = cardRef.current?.getBoundingClientRect();
-      if (!rect) return;
-      rawX.set((e.clientX - rect.left) / rect.width);
-      rawY.set((e.clientY - rect.top) / rect.height);
-    },
-    [rawX, rawY, isFlipped]
-  );
-
-  const handleMouseLeave = useCallback(() => {
-    rawX.set(0.5);
-    rawY.set(0.5);
-  }, [rawX, rawY]);
+  // Sticky offset so cards stack neatly over each other with a top margin cascade
+  const topOffset = 100 + index * 28;
 
   return (
-    <motion.div
+    <div
       ref={cardRef}
       onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-      onClick={() => setIsFlipped((prev) => !prev)}
-      className="relative w-full cursor-pointer group"
       style={{
-        perspective: "1200px",
-        minHeight: "480px",
+        top: `${topOffset}px`,
       }}
-      initial={{ opacity: 0, y: 60 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-80px" }}
-      transition={{
-        duration: 0.9,
-        delay: index * 0.15,
-        ease: [0.16, 1, 0.3, 1],
-      }}
+      className="sticky w-full rounded-3xl transition-all duration-500 group mb-12 last:mb-0"
     >
-      <motion.div
-        className="relative w-full h-full"
-        style={{
-          transformStyle: "preserve-3d",
-          minHeight: "480px",
-        }}
-        animate={{ rotateY: isFlipped ? 180 : 0 }}
-        transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
+      {/* Card Body */}
+      <div
+        className="relative rounded-3xl overflow-hidden p-6 sm:p-10 lg:p-12 transition-all duration-500 bg-white dark:bg-[#0c0f18] border border-slate-200/90 dark:border-white/[0.09] shadow-[0_20px_60px_rgba(0,0,0,0.06)] dark:shadow-[0_20px_60px_rgba(0,0,0,0.45)]"
       >
-        {/* ══════════════════════════════════════
-            FRONT FACE
-           ══════════════════════════════════════ */}
-        <motion.div
-          className="absolute inset-0 rounded-2xl overflow-hidden"
+        {/* ── Spotlight Glow Following Cursor ── */}
+        <div
+          className="pointer-events-none absolute -inset-px rounded-3xl opacity-0 transition-opacity duration-300 group-hover:opacity-100 z-30"
           style={{
-            backfaceVisibility: "hidden",
-            WebkitBackfaceVisibility: "hidden",
-            rotateX: isFlipped ? 0 : rotateCardX,
-            rotateY: isFlipped ? 0 : rotateCardY,
+            background: `radial-gradient(500px circle at ${mousePos.x}px ${mousePos.y}px, rgba(109, 93, 251, 0.22), rgba(0, 212, 255, 0.08) 40%, transparent 80%)`,
           }}
-        >
-          {/* Animated border glow */}
-          <div
-            className="absolute inset-0 rounded-2xl p-px"
-            style={{
-              background:
-                "linear-gradient(135deg, rgba(109,93,251,0.3), rgba(138,99,255,0.15), rgba(0,212,255,0.3))",
-              opacity: 0.5,
-            }}
-          >
-            <div className="absolute inset-px rounded-[15px] bg-slate-50 dark:bg-[#0D0F18]" />
-          </div>
+        />
 
-          {/* Hover glow border overlay */}
-          <motion.div
-            className="absolute inset-0 rounded-2xl p-px opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-            style={{
-              background:
-                "linear-gradient(135deg, #6D5DFB, #8A63FF, #00D4FF, #8A63FF, #6D5DFB)",
-              backgroundSize: "300% 300%",
-              animation: "borderShift 4s ease infinite",
-            }}
-          >
-            <div className="absolute inset-px rounded-[15px] bg-slate-50 dark:bg-[#0D0F18]" />
-          </motion.div>
+        {/* Ambient Top Glow */}
+        <div
+          className={`absolute top-0 right-0 w-[500px] h-[300px] bg-gradient-to-bl ${step.gradient} rounded-full blur-[90px] pointer-events-none z-0`}
+        />
 
-          {/* Inner content */}
-          <div className="relative z-10 h-full flex flex-col items-center justify-between pt-7 px-7 pb-11 sm:pt-8 sm:px-8 sm:pb-12">
-            {/* Dynamic hover glow */}
-            <motion.div
-              className="absolute w-[200px] h-[200px] rounded-full pointer-events-none z-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-              style={{
-                left: glowX,
-                top: glowY,
-                x: "-50%",
-                y: "-50%",
-                background: `radial-gradient(circle, ${step.accent}20 0%, transparent 70%)`,
-                filter: "blur(40px)",
-              }}
-            />
-
-            {/* Step number */}
-            <div className="w-full text-left relative z-10">
-              <span className="text-5xl sm:text-6xl font-bold font-cabinet text-gradient-aurora select-none leading-none">
-                {step.num}
+        <div className="relative z-20 grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-8 lg:gap-12 items-center">
+          {/* ── LEFT COLUMN: Text & Deliverables ── */}
+          <div className="flex flex-col items-start text-left">
+            {/* Phase pill + duration badge */}
+            <div className="flex flex-wrap items-center gap-2 mb-4">
+              <span className="text-[10px] uppercase tracking-[0.25em] font-bold text-white px-3 py-1 rounded-full gradient-aurora shadow-sm">
+                {step.phase}
+              </span>
+              <span className="text-[10px] uppercase tracking-[0.2em] font-semibold text-slate-500 dark:text-silver/50 px-3 py-1 rounded-full bg-slate-100 dark:bg-white/[0.04] border border-slate-200/60 dark:border-white/[0.06]">
+                ⏱ {step.duration}
               </span>
             </div>
 
-            {/* Jarvis chubby — floating animation */}
-            <div className="relative z-10 flex-1 flex items-center justify-center py-4">
-              <motion.img
-                src={step.image}
-                alt={step.title}
-                className="w-36 h-36 sm:w-40 sm:h-40 object-contain select-none pointer-events-none"
-                style={{
-                  filter: `drop-shadow(0 0 20px ${step.accent}40) drop-shadow(0 0 40px ${step.accent}15)`,
-                }}
-                animate={{
-                  y: [0, -8, 0],
-                }}
-                transition={{
-                  duration: 4 + index * 0.5,
-                  ease: "easeInOut",
-                  repeat: Infinity,
-                }}
-              />
-            </div>
-
-            {/* Title & Description */}
-            <div className="w-full text-left relative z-10">
-              <h3 className="text-xl font-bold font-cabinet text-slate-900 dark:text-white tracking-tight">
+            {/* Step Number + Title */}
+            <div className="flex items-baseline gap-3 mt-1">
+              <span className="text-4xl sm:text-5xl font-black font-cabinet text-gradient-aurora leading-none select-none">
+                {step.num}
+              </span>
+              <h3 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-cabinet text-slate-900 dark:text-white tracking-tight leading-tight">
                 {step.title}
               </h3>
-              <p className="text-sm text-slate-500 dark:text-silver/60 mt-2 leading-relaxed">
-                {step.description}
-              </p>
+            </div>
 
-              {/* Interaction hint */}
-              <div className="flex items-center gap-2 mt-4 text-xs text-slate-400 dark:text-purple-light/60 group-hover:text-[#6D5DFB] dark:group-hover:text-purple-light transition-colors duration-300">
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="opacity-70 group-hover:rotate-180 transition-transform duration-500"
-                >
-                  <path d="M3 12a9 9 0 0 1 15-6.7L21 8" />
-                  <path d="M21 3v5h-5" />
-                  <path d="M21 12a9 9 0 0 1-15 6.7L3 16" />
-                  <path d="M3 21v-5h5" />
-                </svg>
-                <span>Haz clic para descubrir más</span>
+            {/* Description */}
+            <p className="text-sm sm:text-base text-slate-600 dark:text-silver/70 mt-4 leading-relaxed max-w-xl font-normal">
+              {step.description}
+            </p>
+
+            {/* Deliverables Checklist */}
+            <div className="mt-6 w-full pt-6 border-t border-slate-200/60 dark:border-white/[0.06]">
+              <span className="text-[10px] uppercase tracking-[0.25em] font-bold text-[#6D5DFB] dark:text-[#8A63FF] block mb-3">
+                Entregables Clave:
+              </span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                {step.deliverables.map((item) => (
+                  <div
+                    key={item}
+                    className="flex items-center gap-2.5 text-xs sm:text-sm font-medium text-slate-700 dark:text-silver/80"
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#00D4FF] shrink-0 shadow-[0_0_6px_#00D4FF]" />
+                    <span>{item}</span>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
 
-          {/* Subtle bottom gradient line */}
-          <div
-            className="absolute bottom-0 left-0 right-0 h-px opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-            style={{
-              background:
-                "linear-gradient(90deg, transparent, #6D5DFB, #00D4FF, transparent)",
-            }}
-          />
-        </motion.div>
+          {/* ── RIGHT COLUMN: Mascot 3D Illustration & Visual Frame ── */}
+          <div className="relative flex items-center justify-center lg:justify-end">
+            <div className="relative w-full max-w-[280px] sm:max-w-[320px] aspect-square rounded-2xl bg-slate-100/70 dark:bg-black/40 border border-slate-200/60 dark:border-white/[0.07] p-6 flex items-center justify-center overflow-hidden">
+              {/* Background circular halo */}
+              <div
+                className="absolute w-44 h-44 rounded-full blur-2xl opacity-60"
+                style={{
+                  background: `radial-gradient(circle, ${step.accent}50, transparent 70%)`,
+                }}
+              />
 
-        {/* ══════════════════════════════════════
-            BACK FACE
-           ══════════════════════════════════════ */}
-        <div
-          className="absolute inset-0 rounded-2xl overflow-hidden"
-          style={{
-            backfaceVisibility: "hidden",
-            WebkitBackfaceVisibility: "hidden",
-            transform: "rotateY(180deg)",
-          }}
-        >
-          {/* Border */}
-          <div
-            className="absolute inset-0 rounded-2xl p-px"
-            style={{
-              background:
-                "linear-gradient(135deg, #6D5DFB, #8A63FF, #00D4FF)",
-            }}
-          >
-            <div className="absolute inset-px rounded-[15px] bg-slate-50 dark:bg-[#0D0F18]" />
-          </div>
+              {/* Floating Jarvis Illustration */}
+              <motion.img
+                src={step.image}
+                alt={step.title}
+                className="relative z-10 w-44 h-44 sm:w-52 sm:h-52 object-contain select-none pointer-events-none drop-shadow-[0_10px_25px_rgba(109,93,251,0.25)]"
+                animate={{
+                  y: [0, -10, 0],
+                }}
+                transition={{
+                  duration: 5 + index * 0.5,
+                  ease: "easeInOut",
+                  repeat: Infinity,
+                }}
+              />
 
-          {/* Background glow accent */}
-          <div
-            className="absolute inset-0 pointer-events-none z-0"
-            style={{
-              background: `radial-gradient(ellipse at 50% 100%, ${step.accent}12 0%, transparent 60%)`,
-            }}
-          />
-
-          {/* Background mascot watermark */}
-          <div
-            className="absolute right-[-20px] bottom-[-20px] w-40 h-40 pointer-events-none z-0"
-            style={{
-              backgroundImage: `url(${step.image})`,
-              backgroundSize: "contain",
-              backgroundRepeat: "no-repeat",
-              backgroundPosition: "center",
-              opacity: 0.06,
-              filter: "blur(1px)",
-            }}
-          />
-
-          {/* Back content */}
-          <div className="relative z-10 h-full flex flex-col pt-7 px-7 pb-11 sm:pt-8 sm:px-8 sm:pb-12">
-            {/* Back header */}
-            <div className="flex items-center gap-3 mb-6">
-              <span className="text-3xl font-bold font-cabinet text-gradient-aurora select-none">
-                {step.num}
+              {/* Step indicator watermark */}
+              <span className="absolute bottom-2 right-4 text-7xl font-black font-cabinet text-slate-900/[0.04] dark:text-white/[0.04] select-none pointer-events-none">
+                0{index + 1}
               </span>
-              <div className="h-px flex-1 bg-gradient-to-r from-[#6D5DFB]/30 to-transparent" />
-            </div>
-
-            <h4 className="text-lg font-bold font-cabinet text-slate-900 dark:text-white tracking-tight">
-              {step.title}
-            </h4>
-
-            <p className="text-xs uppercase tracking-[0.2em] text-[#6D5DFB] font-medium mt-4 mb-5">
-              Incluye:
-            </p>
-
-            {/* Milestones list */}
-            <ul className="space-y-3 flex-1">
-              {step.milestones.map((milestone, i) => (
-                <motion.li
-                  key={milestone}
-                  className="flex items-center gap-3"
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={isFlipped ? { opacity: 1, x: 0 } : {}}
-                  transition={{
-                    duration: 0.4,
-                    delay: 0.2 + i * 0.08,
-                    ease: [0.16, 1, 0.3, 1],
-                  }}
-                >
-                  <HoloCheck />
-                  <span className="text-sm text-slate-600 dark:text-silver/70">{milestone}</span>
-                </motion.li>
-              ))}
-            </ul>
-
-            {/* Close hint */}
-            <div className="flex items-center gap-2 mt-4 text-xs text-slate-400 dark:text-silver/40">
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 14 14"
-                fill="none"
-                className="opacity-60"
-              >
-                <path
-                  d="M4 4l6 6M10 4l-6 6"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                />
-              </svg>
-              <span>Clic para volver</span>
             </div>
           </div>
         </div>
-      </motion.div>
-    </motion.div>
+      </div>
+    </div>
   );
 }
 
 /* ═══════════════════════════════════════════════════════
-   MAIN COMPONENT
+   MAIN PROCESS COMPONENT WITH STACKING CARDS
    ═══════════════════════════════════════════════════════ */
 export default function Process() {
   const sectionRef = useRef<HTMLElement>(null);
-  const isInView = useInView(sectionRef, { once: true, margin: "-100px" });
+  const isInView = useInView(sectionRef, { once: true, margin: "-80px" });
 
   return (
     <section
       id="process"
       ref={sectionRef}
-      className="py-20 md:py-28 lg:py-32 relative overflow-hidden"
+      className="py-24 md:py-32 relative overflow-visible"
     >
-      {/* Background volumetric glows */}
-      <div className="absolute top-1/3 left-1/4 w-[600px] h-[600px] bg-[#6D5DFB]/[0.04] rounded-full blur-[180px] pointer-events-none" />
-      <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-[#00D4FF]/[0.03] rounded-full blur-[160px] pointer-events-none" />
+      {/* Background Volumetric Glows */}
+      <div className="absolute top-1/4 left-1/4 w-[700px] h-[700px] bg-[#6D5DFB]/[0.04] rounded-full blur-[180px] pointer-events-none" />
+      <div className="absolute bottom-1/4 right-1/4 w-[600px] h-[600px] bg-[#00D4FF]/[0.03] rounded-full blur-[160px] pointer-events-none" />
 
-      <div className="max-w-7xl mx-auto px-6 relative z-10">
-        {/* ── Section header ── */}
+      <div className="max-w-6xl mx-auto px-6 relative z-10">
+        {/* ── Section Header ── */}
         <motion.div
           className="flex flex-col items-center text-center max-w-3xl mx-auto mb-16 md:mb-20"
-          initial={{ opacity: 0, y: 40 }}
+          initial={{ opacity: 0, y: 35 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
         >
           <span className="text-xs uppercase tracking-[0.3em] font-medium text-[#6D5DFB]">
-            PROCESO
+            METODOLOGÍA DE AUTOR
           </span>
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold font-cabinet text-slate-900 dark:text-white mt-4 tracking-tight">
-            Cómo Trabajamos
+            Cómo Creamos Tu Sistema
           </h2>
-          <p className="text-lg text-slate-600 dark:text-silver/70 mt-4 max-w-2xl font-normal leading-relaxed">
-            Un proceso claro, transparente y diseñado para generar resultados.
+          <p className="text-base sm:text-lg text-slate-600 dark:text-silver/60 mt-3 max-w-2xl font-normal leading-relaxed">
+            Un ciclo de trabajo transparente, ágil y estructurado para entregar activos digitales de alto impacto en 4 semanas.
           </p>
         </motion.div>
 
-        {/* ── Flip cards grid ── */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 md:gap-6">
+        {/* ── Sticky Stacking Cards Container ── */}
+        <div className="relative w-full">
           {steps.map((step, index) => (
-            <FlipCard key={step.num} step={step} index={index} />
+            <StickyProcessCard
+              key={step.num}
+              step={step}
+              index={index}
+              totalSteps={steps.length}
+            />
           ))}
         </div>
-
-
       </div>
-
-      {/* ── Animated border keyframe ── */}
-      <style jsx>{`
-        @keyframes borderShift {
-          0% {
-            background-position: 0% 50%;
-          }
-          50% {
-            background-position: 100% 50%;
-          }
-          100% {
-            background-position: 0% 50%;
-          }
-        }
-      `}</style>
     </section>
   );
 }
