@@ -80,23 +80,46 @@ export default function Hero() {
     return () => observer.disconnect();
   }, []);
 
-  // Normalized raw mouse X (LERP handles easing in RAF)
+  // Normalized raw mouse X & Y
   const rawX = useMotionValue(0.5);
   const rawY = useMotionValue(0.5);
+  const lastMoveTimeRef = useRef<number>(Date.now());
 
-  // Springs for 3D tilt, parallax and ambient glow movement
-  const springCss = { stiffness: 70, damping: 20, mass: 0.5 };
+  // Subtle 3D tilt for the console frame (reduced to ~3.5deg so the head turn has clear focal hierarchy)
+  const springCss = { stiffness: 65, damping: 22, mass: 0.5 };
   const springX   = useSpring(rawX, springCss);
   const springY   = useSpring(rawY, springCss);
 
-  const rotateY = useTransform(springX, [0, 1], [-10, 10]);
-  const rotateX = useTransform(springY, [0, 1], [5, -5]);
-  const leftX   = useTransform(springX, [0, 1], [8, -8]);
-  const rightX  = useTransform(springX, [0, 1], [-8, 8]);
-  const glowX   = useTransform(springX, [0, 1], ["-20%", "20%"]);
-  const glowY   = useTransform(springY, [0, 1], ["-10%", "10%"]);
+  const rotateY = useTransform(springX, [0, 1], [-3.5, 3.5]);
+  const rotateX = useTransform(springY, [0, 1], [2, -2]);
+  const leftX   = useTransform(springX, [0, 1], [4, -4]);
+  const rightX  = useTransform(springX, [0, 1], [-4, 4]);
+  const glowX   = useTransform(springX, [0, 1], ["-12%", "12%"]);
+  const glowY   = useTransform(springY, [0, 1], ["-6%", "6%"]);
 
-  // ── Canvas scrubbing with LERP (Dual Video Engine: Dark + Light) ──
+  // ── Kinematic Organic Mapping (Central Deadzone + Progressive S-Curve) ──
+  const getOrganicTarget = (val: number, isInactive: boolean, time: number): number => {
+    if (isInactive) {
+      // Gentle breathing idle movement centered when mouse is resting
+      return 0.5 + Math.sin(time * 0.0012) * 0.012;
+    }
+    const delta = val - 0.5; // range: -0.5 to +0.5
+    const absDelta = Math.abs(delta);
+
+    // Central deadzone: in middle 20% of screen, robot comfortably looks straight forward
+    if (absDelta < 0.1) {
+      return 0.5 + delta * 0.25;
+    }
+
+    // Smooth progressive S-curve for lateral turns with ease-out damping
+    const sign = Math.sign(delta);
+    const normalized = (absDelta - 0.1) / 0.4; // 0 to 1
+    const eased = Math.pow(Math.min(1, Math.max(0, normalized)), 1.3);
+    const mapped = 0.5 + sign * (0.025 + eased * 0.45);
+    return Math.max(0.04, Math.min(0.96, mapped));
+  };
+
+  // ── Canvas scrubbing with Organic Kinematics (Dual Video: Dark + Light) ──
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -107,9 +130,14 @@ export default function Hero() {
     let rafId: number;
 
     const tick = () => {
-      const targetT = rawX.get();
-      // Smooth interpolation — 0.05 gives balanced cinematic inertia
-      currentT += (targetT - currentT) * 0.05;
+      const now = Date.now();
+      const isInactive = (now - lastMoveTimeRef.current) > 2200;
+      const rawTarget = rawX.get();
+      const targetT = getOrganicTarget(rawTarget, isInactive, now);
+
+      // Smooth weighted LERP with natural ease-out
+      const diff = targetT - currentT;
+      currentT += diff * 0.06;
 
       const activeVideo = isDark ? videoDarkRef.current : videoLightRef.current;
       if (activeVideo && activeVideo.readyState >= 2 && activeVideo.duration && isFinite(activeVideo.duration)) {
@@ -152,6 +180,7 @@ export default function Hero() {
   }, [rawX, isDark]);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLElement>) => {
+    lastMoveTimeRef.current = Date.now();
     const rect = sectionRef.current?.getBoundingClientRect();
     if (!rect) return;
     rawX.set((e.clientX - rect.left) / rect.width);
@@ -159,6 +188,7 @@ export default function Hero() {
   };
 
   const handleMouseLeave = () => {
+    lastMoveTimeRef.current = 0; // trigger smooth return to center
     rawX.set(0.5);
     rawY.set(0.5);
   };
