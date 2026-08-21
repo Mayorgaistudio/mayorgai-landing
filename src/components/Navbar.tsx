@@ -83,11 +83,11 @@ export default function Navbar() {
               alt="MayorgAI Studio"
               className="h-8 sm:h-9 w-auto opacity-90 group-hover:opacity-100 transition-all duration-300 hidden dark:block"
             />
-            {/* Light mode logo */}
+            {/* Light mode logo (optically scaled to match SVG) */}
             <img
               src="/brand/logo oscuro.png"
               alt="MayorgAI Studio"
-              className="h-8 sm:h-9 w-auto opacity-90 group-hover:opacity-100 transition-all duration-300 block dark:hidden object-contain"
+              className="h-10 sm:h-11 md:h-12 w-auto opacity-90 group-hover:opacity-100 transition-all duration-300 block dark:hidden object-contain -my-1.5 origin-left scale-105"
             />
           </a>
 
