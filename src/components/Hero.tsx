@@ -317,15 +317,34 @@ export default function Hero() {
                       "linear-gradient(135deg, rgba(109,93,251,0.7) 0%, rgba(0,212,255,0.3) 50%, rgba(109,93,251,0.5) 100%)",
                   }}
                 >
-                  <div className="rounded-[19px] overflow-hidden bg-white dark:bg-black relative transition-colors duration-300">
+                  <div
+                    className="rounded-[19px] overflow-hidden relative transition-colors duration-300"
+                    style={{
+                      backgroundColor: isDark ? "#000000" : "#ffffff",
+                    }}
+                  >
                     {/* Device Chrome Bar */}
                     <div
-                      className="h-[24px] flex items-center px-2.5 gap-1.5 border-b border-slate-200/80 dark:border-purple/20 bg-slate-100/90 dark:bg-gradient-to-r dark:from-purple/20 dark:to-cyan/10 transition-colors"
+                      className="h-[24px] flex items-center px-2.5 gap-1.5 transition-colors duration-300"
+                      style={{
+                        background: isDark
+                          ? "linear-gradient(90deg, rgba(109,93,251,0.25), rgba(0,212,255,0.1))"
+                          : "rgba(241, 245, 249, 0.95)",
+                        backgroundColor: isDark ? "#0c0f18" : "#f1f5f9",
+                        borderBottom: isDark
+                          ? "1px solid rgba(109,93,251,0.22)"
+                          : "1px solid rgba(226, 232, 240, 0.9)",
+                      }}
                     >
                       {["rgba(251,109,109,0.85)", "rgba(251,200,109,0.85)", "rgba(109,251,130,0.85)"].map((c, i) => (
                         <div key={i} className="w-1.5 h-1.5 rounded-full" style={{ background: c }} />
                       ))}
-                      <span className="text-[8px] tracking-widest uppercase text-slate-500 dark:text-silver/30 ml-auto mr-1 font-mono">
+                      <span
+                        className="text-[8px] tracking-widest uppercase ml-auto mr-1 font-mono font-semibold"
+                        style={{
+                          color: isDark ? "rgba(200, 206, 218, 0.75)" : "#64748b",
+                        }}
+                      >
                         JARVIS · ONLINE
                       </span>
                     </div>
@@ -333,7 +352,10 @@ export default function Hero() {
                     {/* Canvas displaying scrubbed video frames */}
                     <canvas
                       ref={canvasRef}
-                      className="block w-full h-auto bg-white dark:bg-black transition-colors"
+                      className="block w-full h-auto transition-colors"
+                      style={{
+                        backgroundColor: isDark ? "#000000" : "#ffffff",
+                      }}
                     />
 
                     {/* Hidden Dark Mode Video Source */}
