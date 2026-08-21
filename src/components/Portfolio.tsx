@@ -5,7 +5,17 @@ import { motion, AnimatePresence } from "framer-motion";
 import type { ProjectMeta } from "@/app/api/portfolio/route";
 
 /* ═══════════════════════════════════════════════════════
-   GRADIENT PALETTE — cycles deterministically per project
+   FILTER PILLARS DEFINITION (4 Clean Categories)
+   ═══════════════════════════════════════════════════════ */
+const PILLARS = [
+  { key: "all", label: "Todos" },
+  { key: "branding", label: "Branding" },
+  { key: "web", label: "Diseño Web" },
+  { key: "social", label: "Contenido & Redes" },
+];
+
+/* ═══════════════════════════════════════════════════════
+   GRADIENT PALETTE
    ═══════════════════════════════════════════════════════ */
 const GRADIENTS = [
   "from-[#6D5DFB]/30 to-[#8A63FF]/20",
@@ -45,23 +55,23 @@ function ProjectSlider({ images, title }: { images: string[]; title: string }) {
           key={currentIndex}
           src={images[currentIndex]}
           alt={`${title} - Preview ${currentIndex + 1}`}
-          className="w-full h-full object-cover object-top transition-transform duration-700 ease-out group-hover:scale-[1.06]"
+          className="w-full h-full object-cover object-top transition-transform duration-700 ease-out group-hover:scale-[1.05]"
           initial={{ opacity: 0, scale: 1.02 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.4 }}
+          transition={{ duration: 0.35 }}
         />
       </AnimatePresence>
 
       {/* Subtle overlay gradient to maintain contrast */}
-      <div className="absolute inset-0 bg-gradient-to-t from-[#090B12]/80 via-transparent to-transparent pointer-events-none z-10" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent pointer-events-none z-10" />
 
-      {/* Navigation Arrows (Visible only if more than 1 image exists) */}
+      {/* Navigation Arrows */}
       {images.length > 1 && (
         <>
           <button
             onClick={handlePrev}
-            className="absolute left-2.5 top-1/2 -translate-y-1/2 z-20 w-7 h-7 rounded-full bg-black/40 hover:bg-black/70 border border-white/10 flex items-center justify-center text-white/70 hover:text-white transition-all duration-200 opacity-0 group-hover/slider:opacity-100 backdrop-blur-md cursor-pointer"
+            className="absolute left-2.5 top-1/2 -translate-y-1/2 z-20 w-7 h-7 rounded-full bg-black/50 hover:bg-black/80 border border-white/10 flex items-center justify-center text-white/80 hover:text-white transition-all duration-200 opacity-0 group-hover/slider:opacity-100 backdrop-blur-md cursor-pointer"
             aria-label="Anterior"
           >
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -71,7 +81,7 @@ function ProjectSlider({ images, title }: { images: string[]; title: string }) {
 
           <button
             onClick={handleNext}
-            className="absolute right-2.5 top-1/2 -translate-y-1/2 z-20 w-7 h-7 rounded-full bg-black/40 hover:bg-black/70 border border-white/10 flex items-center justify-center text-white/70 hover:text-white transition-all duration-200 opacity-0 group-hover/slider:opacity-100 backdrop-blur-md cursor-pointer"
+            className="absolute right-2.5 top-1/2 -translate-y-1/2 z-20 w-7 h-7 rounded-full bg-black/50 hover:bg-black/80 border border-white/10 flex items-center justify-center text-white/80 hover:text-white transition-all duration-200 opacity-0 group-hover/slider:opacity-100 backdrop-blur-md cursor-pointer"
             aria-label="Siguiente"
           >
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -80,7 +90,7 @@ function ProjectSlider({ images, title }: { images: string[]; title: string }) {
           </button>
 
           {/* Dots Indicator */}
-          <div className="absolute bottom-2.5 left-1/2 -translate-x-1/2 z-20 flex gap-1.5 bg-black/50 px-2 py-0.5 rounded-full backdrop-blur-md border border-white/10">
+          <div className="absolute bottom-2.5 left-1/2 -translate-x-1/2 z-20 flex gap-1.5 bg-black/60 px-2 py-0.5 rounded-full backdrop-blur-md border border-white/10">
             {images.map((_, i) => (
               <button
                 key={i}
@@ -116,7 +126,6 @@ function PortfolioCard({
 }) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-  const [isHovered, setIsHovered] = useState(false);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!cardRef.current) return;
@@ -139,37 +148,25 @@ function PortfolioCard({
     <motion.div
       ref={cardRef}
       onMouseMove={handleMouseMove}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      variants={{
-        hidden: { y: 40, opacity: 0 },
-        visible: {
-          y: 0,
-          opacity: 1,
-          transition: { duration: 0.7, ease: [0.16, 1, 0.3, 1] },
-        },
-      }}
-      className="relative rounded-2xl overflow-hidden transition-all duration-300 flex flex-col justify-between h-full group bg-slate-50/70 dark:bg-white/[0.02] border border-slate-200/80 dark:border-white/[0.07] hover:-translate-y-1 shadow-sm hover:shadow-xl hover:shadow-purple/10 dark:hover:shadow-purple/20"
+      layout
+      initial={{ opacity: 0, scale: 0.95, y: 20 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.95, y: 20 }}
+      transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+      className="relative rounded-3xl overflow-hidden transition-all duration-300 flex flex-col justify-between h-full group bg-slate-50/70 dark:bg-[#0c0f18]/80 border border-slate-200/80 dark:border-white/[0.07] hover:-translate-y-1.5 shadow-sm hover:shadow-2xl hover:shadow-purple/10 dark:hover:shadow-purple/20"
     >
-      {/* ── Spotlight Radial Glow Following Cursor ── */}
+      {/* ── Spotlight Radial Glow ── */}
       <div
-        className="pointer-events-none absolute -inset-px rounded-2xl opacity-0 transition-opacity duration-300 group-hover:opacity-100 z-30"
+        className="pointer-events-none absolute -inset-px rounded-3xl opacity-0 transition-opacity duration-300 group-hover:opacity-100 z-30"
         style={{
-          background: `radial-gradient(400px circle at ${mousePos.x}px ${mousePos.y}px, rgba(109, 93, 251, 0.25), rgba(0, 212, 255, 0.1) 40%, transparent 80%)`,
-        }}
-      />
-      {/* Inner subtle glow */}
-      <div
-        className="pointer-events-none absolute inset-0 rounded-2xl opacity-0 transition-opacity duration-300 group-hover:opacity-100 z-10"
-        style={{
-          background: `radial-gradient(280px circle at ${mousePos.x}px ${mousePos.y}px, rgba(109, 93, 251, 0.06), transparent 70%)`,
+          background: `radial-gradient(420px circle at ${mousePos.x}px ${mousePos.y}px, rgba(109, 93, 251, 0.25), rgba(0, 212, 255, 0.1) 40%, transparent 80%)`,
         }}
       />
 
-      {/* Image / Preview Area */}
+      {/* Image Preview Window */}
       <div
         onClick={() => onOpenModal(project)}
-        className="aspect-[4/3] relative overflow-hidden bg-[#090B12] flex items-center justify-center border-b border-slate-200 dark:border-white/[0.06] cursor-pointer"
+        className="aspect-[16/10] relative overflow-hidden bg-[#090B12] flex items-center justify-center border-b border-slate-200/80 dark:border-white/[0.06] cursor-pointer"
       >
         {/* Grid pattern overlay */}
         <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:20px_20px] pointer-events-none z-0" />
@@ -186,32 +183,41 @@ function PortfolioCard({
             </span>
           </>
         )}
+
+        {/* Hover Explore Pill Overlay */}
+        <div className="absolute top-3.5 right-3.5 z-20 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-1 group-hover:translate-y-0">
+          <span className="px-3 py-1 rounded-full text-[10px] font-semibold text-white bg-black/60 backdrop-blur-md border border-white/20 shadow-lg inline-flex items-center gap-1">
+            <span>Ver Caso</span>
+            <span>↗</span>
+          </span>
+        </div>
       </div>
 
       {/* Content Area */}
-      <div className="p-5 flex-1 flex flex-col justify-between relative z-20">
+      <div className="p-6 flex-1 flex flex-col justify-between relative z-20">
         <div>
           {/* Category tags */}
           <div className="flex flex-wrap gap-1.5 mb-2.5">
             {project.categories.map((cat, i) => (
               <span
                 key={i}
-                className="text-[10px] text-[#6D5DFB] dark:text-[#8A63FF] uppercase tracking-wider font-semibold px-2 py-0.5 rounded-full bg-purple/5 dark:bg-purple/10 border border-purple/15"
+                className="text-[10px] text-[#6D5DFB] dark:text-[#8A63FF] uppercase tracking-wider font-semibold px-2.5 py-0.5 rounded-full bg-purple/5 dark:bg-purple/10 border border-purple/15"
               >
                 {cat}
               </span>
             ))}
           </div>
-          <h3 className="text-base font-bold font-cabinet text-slate-900 dark:text-white tracking-tight group-hover:text-purple dark:group-hover:text-[#00D4FF] transition-colors line-clamp-1">
+
+          <h3 className="text-lg font-bold font-cabinet text-slate-900 dark:text-white tracking-tight group-hover:text-purple dark:group-hover:text-[#00D4FF] transition-colors line-clamp-1">
             {project.title}
           </h3>
         </div>
 
         <button
           onClick={() => onOpenModal(project)}
-          className="mt-5 w-full inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full text-xs uppercase tracking-[0.18em] font-semibold text-slate-800 dark:text-silver/80 bg-white dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/[0.08] hover:bg-slate-900 hover:text-white dark:hover:bg-white/[0.1] dark:hover:text-white hover:border-slate-900 dark:hover:border-purple/40 transition-all duration-300 cursor-pointer group/btn"
+          className="mt-5 w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-full text-xs uppercase tracking-[0.18em] font-semibold text-slate-800 dark:text-silver/80 bg-white dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/[0.08] hover:bg-slate-950 hover:text-white dark:hover:bg-white/[0.1] dark:hover:text-white hover:border-slate-950 dark:hover:border-purple/40 transition-all duration-300 cursor-pointer group/btn shadow-sm"
         >
-          <span>Ver Proyecto</span>
+          <span>Explorar Proyecto</span>
           <svg
             className="w-3.5 h-3.5 transform group-hover/btn:translate-x-1 transition-transform duration-300"
             fill="none"
@@ -228,7 +234,7 @@ function PortfolioCard({
 }
 
 /* ═══════════════════════════════════════════════════════
-   LIGHTBOX / SCREENSHOT MODAL SUB-COMPONENT
+   LIGHTBOX MODAL
    ═══════════════════════════════════════════════════════ */
 function ProjectModal({
   project,
@@ -248,56 +254,58 @@ function ProjectModal({
         if (e.key === "ArrowLeft")  setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
       }
     };
-
     window.addEventListener("keydown", handleKeyDown);
-    document.body.style.overflow = "hidden";
-
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = "unset";
-    };
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [images, onClose]);
 
-  const handleNext = () => setCurrentIndex((prev) => (prev + 1) % images.length);
-  const handlePrev = () => setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
-  const hasImages  = images && images.length > 0;
+  const handleNext = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!images) return;
+    setCurrentIndex((prev) => (prev + 1) % images.length);
+  };
+
+  const handlePrev = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!images) return;
+    setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
+  };
+
+  const hasImages = images && images.length > 0;
 
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      transition={{ duration: 0.3 }}
-      className="fixed inset-0 z-50 bg-slate-950/80 dark:bg-[#07090f]/90 backdrop-blur-2xl flex items-center justify-center p-4 md:p-8"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 md:p-10 bg-black/85 backdrop-blur-xl"
       onClick={onClose}
     >
-      {/* Close button */}
-      <button
-        onClick={onClose}
-        className="absolute top-6 right-6 z-50 w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 border border-white/15 flex items-center justify-center text-white transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer"
-        aria-label="Cerrar modal"
-      >
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <line x1="18" y1="6" x2="6" y2="18" />
-          <line x1="6" y1="6" x2="18" y2="18" />
-        </svg>
-      </button>
-
-      {/* Modal Card */}
       <motion.div
-        initial={{ scale: 0.95, opacity: 0 }}
+        initial={{ scale: 0.94, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.95, opacity: 0 }}
-        transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-        className="relative max-w-5xl w-full max-h-[90vh] flex flex-col rounded-3xl overflow-hidden bg-slate-900 border border-white/10 shadow-2xl p-4 sm:p-6"
+        exit={{ scale: 0.94, opacity: 0 }}
+        transition={{ type: "spring", stiffness: 300, damping: 25 }}
         onClick={(e) => e.stopPropagation()}
+        className="relative w-full max-w-5xl rounded-3xl bg-[#090B12] border border-white/10 p-6 md:p-8 flex flex-col justify-between max-h-[90vh] shadow-2xl overflow-hidden"
       >
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-white/10">
+        {/* Close Button */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 z-40 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 border border-white/10 flex items-center justify-center text-white transition-all cursor-pointer"
+          aria-label="Cerrar modal"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+
+        {/* Modal Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pr-12 pb-4 border-b border-white/10">
           <div>
-            <div className="flex flex-wrap gap-1.5 mb-1.5">
+            <div className="flex gap-2 mb-1.5 flex-wrap">
               {project.categories.map((cat, i) => (
-                <span key={i} className="text-[10px] text-[#00D4FF] uppercase tracking-wider font-semibold px-2 py-0.5 rounded-full bg-[#00D4FF]/10 border border-[#00D4FF]/20">
+                <span key={i} className="text-[10px] text-[#00D4FF] uppercase tracking-wider font-semibold px-2.5 py-0.5 rounded-full bg-[#00D4FF]/10 border border-[#00D4FF]/20">
                   {cat}
                 </span>
               ))}
@@ -309,7 +317,7 @@ function ProjectModal({
           <a
             href="#contact"
             onClick={onClose}
-            className="self-start sm:self-auto px-5 py-2 rounded-full text-xs uppercase tracking-[0.2em] font-semibold text-white gradient-aurora hover:shadow-[0_0_25px_rgba(109,93,251,0.45)] transition-all"
+            className="self-start sm:self-auto px-6 py-2.5 rounded-full text-xs uppercase tracking-[0.2em] font-semibold text-white gradient-aurora hover:shadow-[0_0_25px_rgba(109,93,251,0.45)] transition-all"
           >
             Cotizar Similar
           </a>
@@ -393,8 +401,7 @@ function ProjectModal({
 export default function Portfolio() {
   const [projects, setProjects]                     = useState<ProjectMeta[]>([]);
   const [filteredProjects, setFilteredProjects]     = useState<ProjectMeta[]>([]);
-  const [activeCategory, setActiveCategory]         = useState<string>("Todos");
-  const [categories, setCategories]                 = useState<string[]>(["Todos"]);
+  const [activeCategory, setActiveCategory]         = useState<string>("all");
   const [loading, setLoading]                       = useState(true);
   const [activeModalProject, setActiveModalProject] = useState<ProjectMeta | null>(null);
 
@@ -404,11 +411,6 @@ export default function Portfolio() {
       .then((data: ProjectMeta[]) => {
         setProjects(data);
         setFilteredProjects(data);
-
-        // Extract unique categories
-        const cats = new Set<string>();
-        data.forEach((p) => p.categories.forEach((c) => cats.add(c)));
-        setCategories(["Todos", ...Array.from(cats)]);
         setLoading(false);
       })
       .catch((err) => {
@@ -417,12 +419,37 @@ export default function Portfolio() {
       });
   }, []);
 
-  const handleFilter = (category: string) => {
-    setActiveCategory(category);
-    if (category === "Todos") {
+  const handleFilter = (pillarKey: string) => {
+    setActiveCategory(pillarKey);
+    if (pillarKey === "all") {
       setFilteredProjects(projects);
-    } else {
-      setFilteredProjects(projects.filter((p) => p.categories.includes(category)));
+    } else if (pillarKey === "branding") {
+      setFilteredProjects(
+        projects.filter((p) =>
+          p.categories.some((c) => {
+            const lc = c.toLowerCase();
+            return lc.includes("brand") || lc.includes("logo") || lc.includes("identidad") || lc.includes("fintech");
+          })
+        )
+      );
+    } else if (pillarKey === "web") {
+      setFilteredProjects(
+        projects.filter((p) =>
+          p.categories.some((c) => {
+            const lc = c.toLowerCase();
+            return lc.includes("web") || lc.includes("diseño web") || lc.includes("e-commerce");
+          })
+        )
+      );
+    } else if (pillarKey === "social") {
+      setFilteredProjects(
+        projects.filter((p) =>
+          p.categories.some((c) => {
+            const lc = c.toLowerCase();
+            return lc.includes("redes") || lc.includes("post") || lc.includes("social") || lc.includes("salud");
+          })
+        )
+      );
     }
   };
 
@@ -432,40 +459,46 @@ export default function Portfolio() {
       <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-[#00D4FF]/[0.04] rounded-full blur-[140px] pointer-events-none translate-x-24 translate-y-24" />
 
       <div className="max-w-7xl mx-auto px-6 relative z-10">
-        <div className="flex flex-col items-center text-center max-w-3xl mx-auto">
-          <span className="text-xs uppercase tracking-[0.3em] font-medium text-[#6D5DFB]">
-            PORTAFOLIO
-          </span>
-          <h2 className="text-4xl md:text-5xl font-bold font-cabinet text-slate-900 dark:text-white mt-4 tracking-tight">
-            Proyectos Destacados
-          </h2>
-          <p className="text-base text-slate-600 dark:text-silver/60 mt-3 max-w-xl font-normal">
-            Casos de estudio reales donde fusionamos estrategia, creatividad e inteligencia artificial.
-          </p>
+        
+        {/* ── HEADER ROW WITH INLINE MINIMALIST FILTER TABS ── */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+          <div>
+            <span className="text-xs uppercase tracking-[0.3em] font-medium text-[#6D5DFB]">
+              PORTAFOLIO
+            </span>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold font-cabinet text-slate-900 dark:text-white mt-1.5 tracking-tight">
+              Casos de Éxito
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-silver/60 mt-1 max-w-md font-normal">
+              Proyectos reales donde fusionamos estrategia de marca, diseño e inteligencia artificial.
+            </p>
+          </div>
 
-          {/* Interactive Category Filter Pills */}
-          {!loading && categories.length > 2 && (
-            <div className="flex flex-wrap items-center justify-center gap-2 mt-8 p-1.5 rounded-full bg-slate-100/70 dark:bg-white/[0.03] border border-slate-200/60 dark:border-white/[0.05]">
-              {categories.map((cat) => {
-                const isActive = cat === activeCategory;
+          {/* Minimalist Segmented Filter Tabs */}
+          {!loading && (
+            <div className="flex items-center gap-1 p-1 rounded-full bg-slate-100/90 dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/[0.07] backdrop-blur-md self-start md:self-auto overflow-x-auto max-w-full shrink-0 shadow-sm">
+              {PILLARS.map((cat) => {
+                const isActive = cat.key === activeCategory;
                 return (
                   <button
-                    key={cat}
-                    onClick={() => handleFilter(cat)}
-                    className={`relative px-4 py-1.5 rounded-full text-xs uppercase tracking-[0.18em] font-semibold transition-all duration-300 cursor-pointer ${
+                    key={cat.key}
+                    onClick={() => handleFilter(cat.key)}
+                    className={`relative px-3.5 sm:px-4 py-1.5 rounded-full text-xs font-semibold transition-colors duration-300 cursor-pointer whitespace-nowrap ${
                       isActive
                         ? "text-white"
-                        : "text-slate-600 hover:text-slate-900 dark:text-silver/60 dark:hover:text-white"
+                        : "text-slate-600 dark:text-silver/60 hover:text-slate-950 dark:hover:text-white"
                     }`}
                   >
                     {isActive && (
                       <motion.div
-                        layoutId="activeFilterPill"
-                        className="absolute inset-0 rounded-full gradient-aurora shadow-md shadow-purple/20"
-                        transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                        layoutId="portfolioActivePill"
+                        className="absolute inset-0 rounded-full gradient-aurora shadow-sm"
+                        transition={{ type: "spring", stiffness: 400, damping: 30 }}
                       />
                     )}
-                    <span className="relative z-10">{cat}</span>
+                    <span className="relative z-10">
+                      {cat.label}
+                    </span>
                   </button>
                 );
               })}
@@ -473,34 +506,34 @@ export default function Portfolio() {
           )}
         </div>
 
-        {/* Loading state */}
-        {loading && (
-          <div className="flex items-center justify-center mt-20">
-            <div className="w-8 h-8 rounded-full border-2 border-[#6D5DFB]/30 border-t-[#6D5DFB] animate-spin" />
-          </div>
-        )}
-
-        {/* Portfolio Grid with Spotlight effect */}
-        {!loading && filteredProjects.length > 0 && (
-          <motion.div
-            layout
-            initial="hidden"
-            animate="visible"
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-14"
-          >
+        {/* ── PROJECTS GRID (2/3 Col Editorial Grid) ── */}
+        <motion.div
+          layout
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8"
+        >
+          <AnimatePresence mode="popLayout">
             {filteredProjects.map((project, index) => (
               <PortfolioCard
                 key={project.slug}
                 project={project}
                 index={index}
-                onOpenModal={(p) => setActiveModalProject(p)}
+                onOpenModal={setActiveModalProject}
               />
             ))}
-          </motion.div>
+          </AnimatePresence>
+        </motion.div>
+
+        {/* Empty state */}
+        {!loading && filteredProjects.length === 0 && (
+          <div className="text-center py-20">
+            <p className="text-slate-400 dark:text-silver/40 text-sm">
+              No hay proyectos disponibles en esta categoría.
+            </p>
+          </div>
         )}
       </div>
 
-      {/* Lightbox / Modal Overlay */}
+      {/* ── LIGHTBOX MODAL ── */}
       <AnimatePresence>
         {activeModalProject && (
           <ProjectModal
