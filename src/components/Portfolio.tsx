@@ -276,30 +276,33 @@ export default function Portfolio() {
 
         {/* ── THE EDITORIAL MAGAZINE BOOK SPREAD ── */}
         {!loading && currentProject && (
-          <div className="relative rounded-3xl overflow-hidden bg-white/95 dark:bg-[#0b0e17] border border-slate-200/90 dark:border-white/[0.09] shadow-[0_25px_70px_rgba(0,0,0,0.1)] dark:shadow-[0_30px_90px_rgba(0,0,0,0.6)] backdrop-blur-2xl">
-            
-            {/* Magazine Spine Shadow (Central Binding Fold) */}
-            <div className="hidden lg:block absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-8 bg-gradient-to-r from-black/[0.08] via-black/[0.18] to-transparent dark:from-black/40 dark:via-black/70 dark:to-transparent z-20 pointer-events-none" />
-
+          <div
+            className="relative rounded-3xl overflow-hidden bg-white/95 dark:bg-[#0b0e17] border border-slate-200/90 dark:border-white/[0.09] shadow-[0_25px_70px_rgba(0,0,0,0.1)] dark:shadow-[0_30px_90px_rgba(0,0,0,0.6)] backdrop-blur-2xl"
+            style={{ perspective: 1800 }}
+          >
             <AnimatePresence mode="wait" initial={false}>
               <motion.div
                 key={currentPage}
                 initial={{
                   opacity: 0,
-                  rotateY: direction === "next" ? 10 : -10,
-                  x: direction === "next" ? 40 : -40,
+                  rotateY: direction === "next" ? 35 : -35,
+                  scale: 0.97,
                 }}
                 animate={{
                   opacity: 1,
                   rotateY: 0,
-                  x: 0,
+                  scale: 1,
                 }}
                 exit={{
                   opacity: 0,
-                  rotateY: direction === "next" ? -10 : 10,
-                  x: direction === "next" ? -40 : 40,
+                  rotateY: direction === "next" ? -35 : 35,
+                  scale: 0.97,
                 }}
-                transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+                transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                style={{
+                  transformStyle: "preserve-3d",
+                  transformOrigin: direction === "next" ? "left center" : "right center",
+                }}
                 className="grid grid-cols-1 lg:grid-cols-12 min-h-[520px] lg:min-h-[580px]"
               >
                 
