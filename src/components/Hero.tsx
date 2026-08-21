@@ -97,35 +97,39 @@ export default function Hero() {
   const glowX   = useTransform(springX, [0, 1], ["-12%", "12%"]);
   const glowY   = useTransform(springY, [0, 1], ["-6%", "6%"]);
 
+  // ── Global window mouse tracking for instant, unrestricted responsiveness ──
+  useEffect(() => {
+    const onWindowMouseMove = (e: MouseEvent) => {
+      lastMoveTimeRef.current = Date.now();
+      rawX.set(e.clientX / window.innerWidth);
+      rawY.set(e.clientY / window.innerHeight);
+    };
+
+    window.addEventListener("mousemove", onWindowMouseMove, { passive: true });
+    return () => window.removeEventListener("mousemove", onWindowMouseMove);
+  }, [rawX, rawY]);
+
   // ── Kinematic Organic Mapping calibrated to video true angles ──
-  // Video true keyframes: 0.65 = Looking Right, 0.92 = Looking Dead Center/Front, 1.00 = Looking Left
+  // Video true keyframes: 0.15 = Looking Right, 0.92 = Looking Dead Center, 1.00 = Looking Left
   const CENTER_FRAME = 0.92;
   const LEFT_FRAME   = 1.00;
-  const RIGHT_FRAME  = 0.65;
+  const RIGHT_FRAME  = 0.15;
 
   const getOrganicTarget = (val: number, isInactive: boolean, time: number): number => {
     if (isInactive) {
-      // Subtle natural breathing micro-motion perfectly centered looking at the user
-      return CENTER_FRAME + Math.sin(time * 0.0012) * 0.008;
+      // Subtle natural breathing micro-motion centered looking at the user
+      return CENTER_FRAME + Math.sin(time * 0.0012) * 0.006;
     }
     const delta = val - 0.5; // -0.5 (left) to +0.5 (right)
-    const absDelta = Math.abs(delta);
-
-    // Central deadzone: in middle 25% of screen, robot stays looking straight at the user
-    if (absDelta < 0.12) {
-      return CENTER_FRAME;
-    }
-
-    // Normalized progression from edge of deadzone (0) to edge of screen (1)
-    const progress = (absDelta - 0.12) / 0.38;
-    const eased = Math.pow(Math.min(1, Math.max(0, progress)), 1.25);
 
     if (delta < 0) {
-      // Mouse moving to the LEFT -> sweep towards 1.00
-      return CENTER_FRAME + eased * (LEFT_FRAME - CENTER_FRAME);
+      // Mouse moving to the LEFT -> smoothly sweep from 0.92 to 1.00
+      const progress = Math.min(1, Math.abs(delta) * 2);
+      return CENTER_FRAME + progress * (LEFT_FRAME - CENTER_FRAME);
     } else {
-      // Mouse moving to the RIGHT -> sweep towards 0.65
-      return CENTER_FRAME - eased * (CENTER_FRAME - RIGHT_FRAME);
+      // Mouse moving to the RIGHT -> smoothly sweep from 0.92 to 0.15
+      const progress = Math.min(1, Math.abs(delta) * 2);
+      return CENTER_FRAME - progress * (CENTER_FRAME - RIGHT_FRAME);
     }
   };
 
@@ -136,7 +140,7 @@ export default function Hero() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    let currentT = 0.92; // initial calibrated center position (0.92 = looking straight ahead)
+    let currentT = 0.92; // initial calibrated center position
     let rafId: number;
 
     const tick = () => {
@@ -145,9 +149,9 @@ export default function Hero() {
       const rawTarget = rawX.get();
       const targetT = getOrganicTarget(rawTarget, isInactive, now);
 
-      // Smooth weighted LERP with natural ease-out
+      // Smooth weighted LERP
       const diff = targetT - currentT;
-      currentT += diff * 0.06;
+      currentT += diff * 0.08;
 
       const activeVideo = isDark ? videoDarkRef.current : videoLightRef.current;
       if (activeVideo && activeVideo.readyState >= 2 && activeVideo.duration && isFinite(activeVideo.duration)) {
