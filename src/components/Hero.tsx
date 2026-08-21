@@ -97,26 +97,36 @@ export default function Hero() {
   const glowX   = useTransform(springX, [0, 1], ["-12%", "12%"]);
   const glowY   = useTransform(springY, [0, 1], ["-6%", "6%"]);
 
-  // ── Kinematic Organic Mapping (Central Deadzone + Progressive S-Curve) ──
+  // ── Kinematic Organic Mapping calibrated to video true angles ──
+  // Video true keyframes: 0.65 = Looking Right, 0.92 = Looking Dead Center/Front, 1.00 = Looking Left
+  const CENTER_FRAME = 0.92;
+  const LEFT_FRAME   = 1.00;
+  const RIGHT_FRAME  = 0.65;
+
   const getOrganicTarget = (val: number, isInactive: boolean, time: number): number => {
     if (isInactive) {
-      // Gentle breathing idle movement centered when mouse is resting
-      return 0.5 + Math.sin(time * 0.0012) * 0.012;
+      // Subtle natural breathing micro-motion perfectly centered looking at the user
+      return CENTER_FRAME + Math.sin(time * 0.0012) * 0.008;
     }
-    const delta = val - 0.5; // range: -0.5 to +0.5
+    const delta = val - 0.5; // -0.5 (left) to +0.5 (right)
     const absDelta = Math.abs(delta);
 
-    // Central deadzone: in middle 20% of screen, robot comfortably looks straight forward
-    if (absDelta < 0.1) {
-      return 0.5 + delta * 0.25;
+    // Central deadzone: in middle 25% of screen, robot stays looking straight at the user
+    if (absDelta < 0.12) {
+      return CENTER_FRAME;
     }
 
-    // Smooth progressive S-curve for lateral turns with ease-out damping
-    const sign = Math.sign(delta);
-    const normalized = (absDelta - 0.1) / 0.4; // 0 to 1
-    const eased = Math.pow(Math.min(1, Math.max(0, normalized)), 1.3);
-    const mapped = 0.5 + sign * (0.025 + eased * 0.45);
-    return Math.max(0.04, Math.min(0.96, mapped));
+    // Normalized progression from edge of deadzone (0) to edge of screen (1)
+    const progress = (absDelta - 0.12) / 0.38;
+    const eased = Math.pow(Math.min(1, Math.max(0, progress)), 1.25);
+
+    if (delta < 0) {
+      // Mouse moving to the LEFT -> sweep towards 1.00
+      return CENTER_FRAME + eased * (LEFT_FRAME - CENTER_FRAME);
+    } else {
+      // Mouse moving to the RIGHT -> sweep towards 0.65
+      return CENTER_FRAME - eased * (CENTER_FRAME - RIGHT_FRAME);
+    }
   };
 
   // ── Canvas scrubbing with Organic Kinematics (Dual Video: Dark + Light) ──
@@ -126,7 +136,7 @@ export default function Hero() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    let currentT = 0.5; // current lerped position (0-1)
+    let currentT = 0.92; // initial calibrated center position (0.92 = looking straight ahead)
     let rafId: number;
 
     const tick = () => {
@@ -163,7 +173,7 @@ export default function Hero() {
           canvas.width  = video.videoWidth;
           canvas.height = video.videoHeight;
         }
-        video.currentTime = 0.5 * (video.duration || 1);
+        video.currentTime = 0.92 * (video.duration || 1);
       };
       video.addEventListener("loadedmetadata", onMeta);
       if (video.readyState >= 1) onMeta();
